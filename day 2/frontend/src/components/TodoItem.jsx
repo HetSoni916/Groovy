@@ -13,11 +13,8 @@ const TodoItem = ({ todo, onUpdate, onDelete, onToggle }) => {
   const handleDelete = async () => {
     if (!window.confirm(`Delete "${todo.title}"?`)) return;
     setDeleting(true);
-    try {
-      await onDelete(todo.id);
-    } catch {
-      setDeleting(false);
-    }
+    await onDelete(todo.id);
+    setDeleting(false);
   };
 
   const formattedDate = new Date(todo.createdAt).toLocaleDateString("en-US", {

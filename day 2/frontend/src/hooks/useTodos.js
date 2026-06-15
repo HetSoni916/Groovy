@@ -33,13 +33,21 @@ const useTodos = () => {
   };
 
   const updateTodo = async (id, updates) => {
-    const res = await todoService.update(id, updates);
-    setTodos((prev) => prev.map((t) => (t.id === id ? res.data : t)));
+    try {
+      const res = await todoService.update(id, updates);
+      setTodos((prev) => prev.map((t) => (t.id === id ? res.data : t)));
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   const deleteTodo = async (id) => {
-    await todoService.delete(id);
-    setTodos((prev) => prev.filter((t) => t.id !== id));
+    try {
+      await todoService.delete(id);
+      setTodos((prev) => prev.filter((t) => t.id !== id));
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   const toggleComplete = (id, completed) => updateTodo(id, { completed: !completed });
