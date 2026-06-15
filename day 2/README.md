@@ -132,3 +132,71 @@ Open **http://localhost:3000** in your browser.
 - [ ] Unit and integration tests (Jest, React Testing Library)
 - [ ] Docker + docker-compose setup
 - [ ] Deploy to AWS (ECS + RDS or Elastic Beanstalk)
+
+
+## Prompt
+
+Build a production-quality Todo Application using React.js for the frontend and Node.js + Express.js for the backend.
+
+Requirements:
+
+Frontend:
+
+Use React functional components and hooks.
+Create a clean, modern, and responsive UI.
+Include:
+Add Todo
+Edit Todo
+Delete Todo
+Mark Todo as Complete/Incomplete
+Filter Todos (All, Active, Completed)
+Search Todos
+Display loading and error states.
+Use proper folder structure.
+Use reusable components.
+Add form validation.
+
+Backend:
+
+Use Node.js and Express.js.
+Create REST APIs:
+GET /todos
+POST /todos
+PUT /todos/
+DELETE /todos/
+Use in-memory storage initially (no database required).
+Add proper error handling.
+Follow MVC structure.
+
+Code Quality:
+
+Use clean and readable code.
+Add comments where necessary.
+Follow industry best practices.
+Use async/await.
+Use meaningful variable and function names.
+Avoid code duplication.
+
+Project Structure:
+
+Provide complete frontend and backend folder structure.
+Generate all necessary files.
+Explain the purpose of each folder.
+
+Documentation:
+
+Create a professional README.md containing:
+Project Overview
+Features
+Installation Steps
+Running Frontend
+Running Backend
+API Endpoints
+Future Improvements
+
+Output Requirements:
+
+First provide the complete project architecture.
+Then generate backend code file by file.
+Then generate frontend code file by file.
+Finally provide setup instructions and testing steps.
