@@ -18,6 +18,45 @@ def send(messages):
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.load(r)['choices'][0]['message']['content']
 
+PAGE = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Local Chatbot</title>
+  <style>body{font-family:sans-serif;margin:2rem}textarea{width:100%;height:80px}button{padding:0.6rem 1rem;margin-top:0.5rem}pre{white-space:pre-wrap;word-wrap:break-word;background:#f5f5f5;padding:1rem;border-radius:8px}</style>
+</head>
+<body>
+  <h1>Local Chatbot</h1>
+  <p>Enter a message and click Send. The server will POST to <code>/chat</code>.</p>
+  <textarea id="prompt" placeholder="Say something..."></textarea>
+  <br>
+  <button id="send">Send</button>
+  <h2>Reply</h2>
+  <pre id="response"></pre>
+  <script>
+    const resp = document.getElementById('response');
+    document.getElementById('send').onclick = async () => {
+      const message = document.getElementById('prompt').value;
+      if (!message.trim()) return;
+      resp.textContent = 'Waiting...';
+      try {
+        const r = await fetch('/chat', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({message})
+        });
+        if (!r.ok) throw new Error(await r.text());
+        const data = await r.json();
+        resp.textContent = data.reply;
+      } catch (err) {
+        resp.textContent = err.toString();
+      }
+    };
+  </script>
+</body>
+</html>
+'''
+
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, obj):
         b = json.dumps(obj).encode('utf-8')
@@ -26,6 +65,20 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Length', str(len(b)))
         self.end_headers()
         self.wfile.write(b)
+
+    def do_GET(self):
+        if self.path != '/':
+            self.send_response(404)
+            self.send_header('Content-Type','text/plain')
+            self.end_headers()
+            self.wfile.write(b'Not found')
+            return
+        data = PAGE.encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type','text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
 
     def do_POST(self):
         if self.path != '/chat':
@@ -52,7 +105,7 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     port = 8000
     server = HTTPServer(('127.0.0.1', port), Handler)
-    print(f'Listening on http://127.0.0.1:{port}/chat')
+    print(f'Listening on http://127.0.0.1:{port}/')
     try:
         server.serve_forever()
     except KeyboardInterrupt:
