@@ -1,0 +1,6 @@
+timestamp,provider,model,input_tokens,output_tokens,cost,latency_s,prompt_preview,response_preview
+2026-06-16 12:48:27,groq,llama-3.3-70b-versatile,16,1,1.023e-05,0.81,Say hello in one word,Hello
+2026-06-16 12:48:29,cohere,command-r-08-2024,16,1,3e-06,0.76,Say hi in one word,Hi!
+2026-06-16 12:48:29,groq,llama-3.3-70b-versatile,14,5,1.221e-05,0.38,What is 2+2?,2 + 2 = 4.
+2026-06-16 12:49:25,groq,llama-3.3-70b-versatile,12,20,2.288e-05,0.48,hello,Hello. It's nice to meet you. Is there something I can help ...
+2026-06-16 12:51:00,groq,llama-3.3-70b-versatile,12,20,2.288e-05,0.49,hello,Hello. It's nice to meet you. Is there something I can help ...
