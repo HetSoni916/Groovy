@@ -1,0 +1,15 @@
+# Environment and secrets
+*.env
+
+# Runtime outputs
+**/node_output.txt
+**/py_output.txt
+**/__pycache__/
+*.py[cod]
+
+# Node modules
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
