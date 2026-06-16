@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import { processRepo, getRepo, getSummary, listRepos } from '../services/repoService';
+import { generateProjectDescription } from '../services/descriptionService';
 
 export async function uploadRepo(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -103,6 +104,21 @@ export async function getRepoFiles(req: Request, res: Response, next: NextFuncti
       summary: f.summary,
     }));
     res.json(fileList);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getRepoDescription(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { id } = req.params;
+    const repo = getRepo(id);
+    if (!repo) {
+      res.status(404).json({ error: 'Repository not found' });
+      return;
+    }
+    const description = await generateProjectDescription(repo);
+    res.json({ description });
   } catch (err) {
     next(err);
   }

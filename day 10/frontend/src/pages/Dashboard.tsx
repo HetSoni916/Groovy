@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getRepoSummary } from '../services/api';
+import { getRepoSummary, getRepoDescription } from '../services/api';
 import { RepoSummary } from '../types';
 
 interface Props {
@@ -8,6 +8,8 @@ interface Props {
 
 export default function Dashboard({ repoId }: Props) {
   const [summary, setSummary] = useState<RepoSummary | null>(null);
+  const [description, setDescription] = useState('');
+  const [descLoading, setDescLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -18,6 +20,15 @@ export default function Dashboard({ repoId }: Props) {
       .then(setSummary)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+  }, [repoId]);
+
+  useEffect(() => {
+    if (!repoId) return;
+    setDescLoading(true);
+    getRepoDescription(repoId)
+      .then(setDescription)
+      .catch(() => setDescription(''))
+      .finally(() => setDescLoading(false));
   }, [repoId]);
 
   if (!repoId) {
@@ -42,6 +53,14 @@ export default function Dashboard({ repoId }: Props) {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <h2 className="text-xl font-semibold">{summary.projectName}</h2>
+
+      {descLoading ? (
+        <div className="bg-gray-800 rounded p-4 border border-gray-700 text-gray-400 text-sm">Generating project description...</div>
+      ) : description ? (
+        <div className="bg-gray-800 rounded p-4 border border-blue-700/50">
+          <p className="text-sm text-gray-200 leading-relaxed">{description}</p>
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Stat label="Files" value={summary.totalFiles} />

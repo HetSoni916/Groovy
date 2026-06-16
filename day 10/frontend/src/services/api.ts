@@ -30,6 +30,13 @@ export async function getRepoSummary(id: string): Promise<RepoSummary> {
   return res.json();
 }
 
+export async function getRepoDescription(id: string): Promise<string> {
+  const res = await fetch(`${API}/repos/${id}/description`);
+  if (!res.ok) throw new Error('Description not found');
+  const data = await res.json();
+  return data.description;
+}
+
 export async function getRepoFiles(id: string): Promise<FileInfo[]> {
   const res = await fetch(`${API}/repos/${id}/files`);
   if (!res.ok) throw new Error('Files not found');

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import { config } from '../config';
 import { rateLimiter } from '../middleware/rateLimiter';
-import { uploadRepo, scanPath, getRepoById, getRepoSummary, listAllRepos, getRepoFiles, getFileContent } from '../controllers/repoController';
+import { uploadRepo, scanPath, getRepoById, getRepoSummary, getRepoDescription, listAllRepos, getRepoFiles, getFileContent } from '../controllers/repoController';
 import { askQuestion } from '../controllers/chatController';
 
 const router = Router();
@@ -16,6 +16,7 @@ const upload = multer({
 router.get('/repos', listAllRepos);
 router.get('/repos/:id', getRepoById);
 router.get('/repos/:id/summary', getRepoSummary);
+router.get('/repos/:id/description', getRepoDescription);
 router.get('/repos/:id/files', getRepoFiles);
 router.get('/repos/:id/files/*', getFileContent);
 
