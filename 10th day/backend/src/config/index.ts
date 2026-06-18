@@ -13,5 +13,9 @@ export const config = {
   contextBudget: 0.80,
   questionBudget: 0.10,
   chunkTokenLimit: 500,
-  maxChunksSelected: 15,
+  maxChunksSelected: 3,
+  embeddingModel: process.env.EMBEDDING_MODEL || 'Xenova/all-MiniLM-L6-v2',
+  useReranker: process.env.USE_RERANKER === 'true',
+  rerankerTopK: parseInt(process.env.RERANKER_TOP_K || '3', 10),
+  rerankerFirstPassK: parseInt(process.env.RERANKER_FIRST_PASS_K || '10', 10),
 };

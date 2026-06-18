@@ -12,7 +12,7 @@ export async function askQuestion(req: Request, res: Response, next: NextFunctio
       return;
     }
 
-    const repo = getRepo(repoId);
+    const repo = await getRepo(repoId);
     if (!repo) {
       res.status(404).json({ error: 'Repository not found' });
       return;

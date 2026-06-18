@@ -5,8 +5,7 @@ import * as path from 'path';
 import { Repository, FileInfo, RepoSummary } from '../types';
 import { scanDirectory } from './parser';
 import { chunkFiles } from './chunker';
-
-const repos = new Map<string, Repository>();
+import * as db from './database';
 
 function computeHash(dirPath: string): string {
   let hash = '';
@@ -84,13 +83,13 @@ function detectTechStack(files: FileInfo[]): string[] {
               if (deps.includes('socket.io')) stack.add('Socket.IO');
             }
             if (pkg.devDependencies) {
-              const devDeps = Object.keys(pkg.devDependencies);
-              if (devDeps.includes('typescript')) stack.add('TypeScript');
-              if (devDeps.includes('jest') || devDeps.includes('vitest') || devDeps.includes('mocha')) stack.add('Testing Framework');
-              if (devDeps.includes('tailwindcss') || devDeps.includes('postcss')) stack.add('Tailwind CSS');
-              if (devDeps.includes('eslint')) stack.add('ESLint');
-              if (devDeps.includes('prettier')) stack.add('Prettier');
-              if (devDeps.includes('webpack') || devDeps.includes('vite') || devDeps.includes('rollup')) stack.add('Bundler');
+              const deps = Object.keys(pkg.devDependencies);
+              if (deps.includes('typescript')) stack.add('TypeScript');
+              if (deps.includes('jest') || deps.includes('vitest') || deps.includes('mocha')) stack.add('Testing Framework');
+              if (deps.includes('tailwindcss') || deps.includes('postcss')) stack.add('Tailwind CSS');
+              if (deps.includes('eslint')) stack.add('ESLint');
+              if (deps.includes('prettier')) stack.add('Prettier');
+              if (deps.includes('webpack') || deps.includes('vite') || deps.includes('rollup')) stack.add('Bundler');
             }
           } catch { /* ignore parse errors */ }
         }
@@ -118,7 +117,6 @@ function detectTechStack(files: FileInfo[]): string[] {
     }
   }
 
-  // Check for framework-specific patterns
   if (allContent.includes('@app.route') || allContent.includes('flask')) stack.add('Flask');
   if (allContent.includes('from django') || allContent.includes('django.urls')) stack.add('Django');
   if (allContent.includes('require(\'express\')') || allContent.includes('from \'express\'') || allContent.includes('require("express")') || allContent.includes('from "express"')) stack.add('Express.js');
@@ -135,7 +133,6 @@ function findEntryPoints(files: FileInfo[]): string[] {
     const match = files.find(f => f.path.endsWith(name));
     if (match) entries.push(match.path);
   }
-  // Also look for entry in package.json
   const pkgFile = files.find(f => f.path === 'package.json');
   if (pkgFile) {
     try {
@@ -152,8 +149,6 @@ function findEntryPoints(files: FileInfo[]): string[] {
 
 function findEnvVars(files: FileInfo[]): string[] {
   const vars = new Set<string>();
-
-  // Check .env.example files
   for (const file of files) {
     if (file.path.endsWith('.env.example') || file.path === '.env.example') {
       const lines = file.content.split('\n');
@@ -163,8 +158,6 @@ function findEnvVars(files: FileInfo[]): string[] {
       }
     }
   }
-
-  // Also find process.env.X references in JS/TS files
   for (const file of files) {
     if (['.js', '.jsx', '.ts', '.tsx', '.py'].includes(path.extname(file.path))) {
       const envRefs = file.content.matchAll(/(?:process\.env\.(\w+)|os\.environ\[['"](\w+)['"]\])/g);
@@ -173,15 +166,12 @@ function findEnvVars(files: FileInfo[]): string[] {
       }
     }
   }
-
   return [...vars];
 }
 
 function findApiRoutes(files: FileInfo[]): string[] {
   const routes: string[] = [];
-
   for (const file of files) {
-    // Express routes
     const expressPatterns = [
       ...file.content.matchAll(/\.(get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/g),
       ...file.content.matchAll(/\.route\s*\(\s*['"]([^'"]+)['"]/g),
@@ -192,26 +182,20 @@ function findApiRoutes(files: FileInfo[]): string[] {
       const route = match[2] || match[3];
       routes.push(`${method} ${route}`);
     }
-
-    // Flask routes
     const flaskPatterns = file.content.matchAll(/@\w+\.route\s*\(\s*['"]([^'"]+)['"]/g);
     for (const match of flaskPatterns) {
       routes.push(`GET ${match[1]}`);
     }
-
-    // FastAPI routes
     const fastapiPatterns = file.content.matchAll(/@\w+\.(get|post|put|delete)\(['"]([^'"]+)['"]/g);
     for (const match of fastapiPatterns) {
       routes.push(`${match[1].toUpperCase()} ${match[2]}`);
     }
   }
-
   return [...new Set(routes)];
 }
 
 function buildFolderStructure(files: FileInfo[]): string {
   const tree = new Map<string, Set<string>>();
-
   for (const file of files) {
     const parts = file.path.replace(/\\/g, '/').split('/');
     let current = '';
@@ -221,7 +205,6 @@ function buildFolderStructure(files: FileInfo[]): string {
       if (!tree.has(parent)) tree.set(parent, new Set());
       tree.get(parent)!.add(current);
     }
-    // Add file to its parent dir
     const parent = current;
     if (!tree.has(parent)) tree.set(parent, new Set());
     tree.get(parent)!.add(file.path.replace(/\\/g, '/'));
@@ -250,7 +233,6 @@ function buildFolderStructure(files: FileInfo[]): string {
     }
     return result;
   }
-
   return printTree('', '');
 }
 
@@ -259,8 +241,7 @@ function getTotalLines(files: FileInfo[]): number {
 }
 
 function generateProjectName(dirPath: string): string {
-  const name = path.basename(path.resolve(dirPath));
-  return name;
+  return path.basename(path.resolve(dirPath));
 }
 
 export async function processRepo(name: string, dirPath: string): Promise<Repository> {
@@ -271,13 +252,6 @@ export async function processRepo(name: string, dirPath: string): Promise<Reposi
   }
 
   const hash = computeHash(resolvedPath);
-
-  // Check if already cached with same hash
-  for (const [_, repo] of repos) {
-    if (repo.hash === hash) {
-      return repo;
-    }
-  }
 
   const files = scanDirectory(resolvedPath);
   const chunks = chunkFiles(files);
@@ -292,7 +266,6 @@ export async function processRepo(name: string, dirPath: string): Promise<Reposi
     createdAt: new Date().toISOString(),
   };
 
-  // Build summary
   const summary: RepoSummary = {
     projectName,
     techStack: detectTechStack(files),
@@ -305,24 +278,21 @@ export async function processRepo(name: string, dirPath: string): Promise<Reposi
   };
 
   repo.summary = summary;
-  repos.set(repo.id, repo);
+
+  await db.saveRepo(repo);
 
   return repo;
 }
 
-export function getRepo(id: string): Repository | undefined {
-  return repos.get(id);
+export async function getRepo(id: string): Promise<Repository | undefined> {
+  return db.getRepo(id);
 }
 
-export function getSummary(id: string): RepoSummary | undefined {
-  return repos.get(id)?.summary;
+export async function getSummary(id: string): Promise<RepoSummary | undefined> {
+  const repo = await db.getRepo(id);
+  return repo?.summary;
 }
 
-export function listRepos(): { id: string; name: string; createdAt: string; totalFiles: number }[] {
-  return [...repos.values()].map(r => ({
-    id: r.id,
-    name: r.name,
-    createdAt: r.createdAt,
-    totalFiles: r.files.length,
-  }));
+export async function listRepos(): Promise<{ id: string; name: string; createdAt: string; totalFiles: number }[]> {
+  return db.listRepos();
 }

@@ -55,7 +55,7 @@ export async function scanPath(req: Request, res: Response, next: NextFunction):
 export async function getRepoById(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { id } = req.params;
-    const repo = getRepo(id);
+    const repo = await getRepo(id);
     if (!repo) {
       res.status(404).json({ error: 'Repository not found' });
       return;
@@ -69,7 +69,7 @@ export async function getRepoById(req: Request, res: Response, next: NextFunctio
 export async function getRepoSummary(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { id } = req.params;
-    const summary = getSummary(id);
+    const summary = await getSummary(id);
     if (!summary) {
       res.status(404).json({ error: 'Repository not found' });
       return;
@@ -82,7 +82,7 @@ export async function getRepoSummary(req: Request, res: Response, next: NextFunc
 
 export async function listAllRepos(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const repos = listRepos();
+    const repos = await listRepos();
     res.json(repos);
   } catch (err) {
     next(err);
@@ -92,7 +92,7 @@ export async function listAllRepos(_req: Request, res: Response, next: NextFunct
 export async function getRepoFiles(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { id } = req.params;
-    const repo = getRepo(id);
+    const repo = await getRepo(id);
     if (!repo) {
       res.status(404).json({ error: 'Repository not found' });
       return;
@@ -112,7 +112,7 @@ export async function getRepoFiles(req: Request, res: Response, next: NextFuncti
 export async function getRepoDescription(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { id } = req.params;
-    const repo = getRepo(id);
+    const repo = await getRepo(id);
     if (!repo) {
       res.status(404).json({ error: 'Repository not found' });
       return;
@@ -132,7 +132,7 @@ export async function getFileContent(req: Request, res: Response, next: NextFunc
       res.status(400).json({ error: 'File path is required' });
       return;
     }
-    const repo = getRepo(id);
+    const repo = await getRepo(id);
     if (!repo) {
       res.status(404).json({ error: 'Repository not found' });
       return;

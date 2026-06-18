@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { pdfService } from '../services/pdfParser';
 import { chunkerService } from '../services/chunker';
+import { vectorStore } from '../services/vectorStore';
 import { storage } from '../utils/storage';
 
 export async function uploadPdf(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -12,7 +13,7 @@ export async function uploadPdf(req: Request, res: Response, next: NextFunction)
 
     const result = await pdfService.parsePdf(req.file.path, req.file.originalname);
     const pages = storage.getPages(result.document.id);
-    chunkerService.chunkPages(result.document.id, pages);
+    await chunkerService.chunkPages(result.document.id, pages);
 
     res.status(201).json(result);
   } catch (err) {
@@ -33,6 +34,7 @@ export async function deletePdf(req: Request, res: Response, next: NextFunction)
   try {
     const { id } = req.params;
     await pdfService.deleteDocument(id);
+    await vectorStore.deleteDocument(id);
     res.json({ success: true });
   } catch (err) {
     next(err);

@@ -5,7 +5,8 @@ import Sidebar from '../components/Sidebar';
 import ChatMessage from '../components/ChatMessage';
 import CostPanel from '../components/CostPanel';
 import { askQuestion, getChatHistory, clearChatHistory } from '../services/api';
-import { ChatEntry, TokenUsage } from '../types';
+import { ChatEntry, TokenUsage, ChunkResult } from '../types';
+import ChromaTable from '../components/ChromaTable';
 
 export default function Chat() {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -15,6 +16,7 @@ export default function Chat() {
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [lastUsage, setLastUsage] = useState<TokenUsage | null>(null);
+  const [lastChunks, setLastChunks] = useState<ChunkResult[]>([]);
 
   useEffect(() => {
     loadDocuments();
@@ -95,6 +97,7 @@ export default function Chat() {
       };
       setMessages(prev => [...prev.slice(0, -1), entry]);
       setLastUsage(result.usage);
+      setLastChunks(result.chunks || []);
     } catch (e: any) {
       const errorEntry: ChatEntry = {
         id: (Date.now() + 1).toString(),
@@ -155,6 +158,7 @@ export default function Chat() {
           )}
         </div>
 
+        {lastChunks.length > 0 && <div className="px-4 pb-2"><ChromaTable chunks={lastChunks} /></div>}
         {lastUsage && <div className="px-4 pb-2"><CostPanel usage={lastUsage} /></div>}
 
         <div className="border-t border-gray-800 p-4">

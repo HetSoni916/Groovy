@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { retrievalService } from '../services/retrieval';
 import { groqService } from '../services/anthropic.service';
 import { storage } from '../utils/storage';
-import { ChatEntry, Source } from '../types';
+import { ChatEntry, Source, ChunkResult } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { config } from '../config';
 
@@ -11,7 +11,8 @@ const SYSTEM_PROMPT = `You are a helpful note assistant. Your role is to answer 
 RULES:
 - Answer only from the provided context. Never use external knowledge.
 - If the context does not contain the answer, respond: "I could not find this information in the uploaded notes."
-- Always cite the source filename and page number for each piece of information.
+- INLINE CITATIONS REQUIRED: Cite the source chunk ID and page number for each fact in parentheses, e.g. (chunk: abc12345, Page 3).
+- Each paragraph must end with a citation to its source chunk.
 - Format answers using markdown for readability.
 - Be concise but complete.
 - If the context is unclear, acknowledge the uncertainty.`;
@@ -25,7 +26,7 @@ export async function askQuestion(req: Request, res: Response, next: NextFunctio
       return;
     }
 
-    const scoredChunks = retrievalService.search(question, documentIds);
+    const scoredChunks = await retrievalService.search(question, documentIds);
     const context = retrievalService.buildContext(scoredChunks);
 
     if (!context.trim()) {
@@ -45,13 +46,24 @@ export async function askQuestion(req: Request, res: Response, next: NextFunctio
     const sources: Source[] = [];
     const seen = new Set<string>();
 
-    for (const { chunk } of scoredChunks) {
+    const chunks: ChunkResult[] = [];
+
+    for (const { chunk, score } of scoredChunks) {
       const doc = docMap.get(chunk.documentId);
       const key = `${doc?.filename}-${chunk.pageStart}`;
       if (!seen.has(key) && doc) {
         seen.add(key);
         sources.push({ filename: doc.filename, pageNumber: chunk.pageStart });
       }
+      chunks.push({
+        id: chunk.id.substring(0, 8),
+        documentId: chunk.documentId,
+        filename: doc?.filename || 'Unknown',
+        pageStart: chunk.pageStart,
+        pageEnd: chunk.pageEnd,
+        content: chunk.content.substring(0, 120),
+        score: Math.round(score * 10000) / 10000,
+      });
     }
 
     const entry: ChatEntry = {
@@ -69,6 +81,7 @@ export async function askQuestion(req: Request, res: Response, next: NextFunctio
       answer: result.answer,
       sources,
       usage: result.usage,
+      chunks,
     });
   } catch (err) {
     next(err);

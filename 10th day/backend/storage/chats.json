@@ -1,0 +1,342 @@
+[
+  {
+    "id": "29dca74e-16b5-4298-875c-faf80d04168f",
+    "question": "why ",
+    "answer": "I could not find this information in the uploaded notes. The provided context from \"Urva & Satya (1).pdf — Page 1\" only mentions \"Urva & Satya\" and \"Dinner\" without providing any additional information that could answer the question \"why\".",
+    "sources": [
+      {
+        "filename": "Urva & Satya (1).pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 135,
+      "outputTokens": 51,
+      "totalTokens": 186,
+      "cost": 0.00012,
+      "latencyMs": 1093,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-16T10:08:02.454Z"
+  },
+  {
+    "id": "e1fb19bb-1471-48ac-90b9-ba554669d1ba",
+    "question": "why '",
+    "answer": "It seems like your question got cut off. You started with \"why\" but didn't finish the question. \n\nCould you please complete your question so I can provide a helpful response based on the context from `[23cs097_HetSoni.pdf — Page 1]`?",
+    "sources": [
+      {
+        "filename": "23cs097_HetSoni.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 954,
+      "outputTokens": 51,
+      "totalTokens": 1005,
+      "cost": 0.0006,
+      "latencyMs": 866,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-16T10:09:26.166Z"
+  },
+  {
+    "id": "4475454e-6da3-44fa-9b02-711d55fe43d1",
+    "question": "why?",
+    "answer": "I could not find this information in the uploaded notes. The question \"why?\" is unclear and lacks context, making it impossible to provide a relevant answer based on the provided PDF content.",
+    "sources": [
+      {
+        "filename": "23cs097_HetSoni.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 953,
+      "outputTokens": 42,
+      "totalTokens": 995,
+      "cost": 0.0006,
+      "latencyMs": 899,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-16T10:09:54.137Z"
+  },
+  {
+    "id": "36a6ac59-2d12-4656-a765-6129b6cc8795",
+    "question": "what are the challenges and limitations in the pdf",
+    "answer": "### Challenges and Limitations\nAccording to the provided context from `[23cs097_HetSoni.pdf — Page 1]`, the challenges and limitations of cloud-based backup solutions are:\n* Data Privacy Risks: Sensitive data stored on cloud servers\n* Internet Dependency: Requires stable internet connection\n* Vendor Lock-in: Difficulty switching providers\n* Cost Management: Improper usage may increase costs\n* Security Threats: Risk of cyberattacks if not properly secured\n* Latency Issues: Delay in accessing large backup files \n\nSource: `[23cs097_HetSoni.pdf — Page 1]`, Section 5. Challenges and Limitations.",
+    "sources": [
+      {
+        "filename": "23cs097_HetSoni.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 492,
+      "outputTokens": 108,
+      "totalTokens": 600,
+      "cost": 0.00038,
+      "latencyMs": 656,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-16T10:10:42.978Z"
+  },
+  {
+    "id": "a0a1ba71-9906-41a9-b87c-80ce1f630258",
+    "question": "explain the introduction in very short ",
+    "answer": "### Introduction\nThe introduction states that data is a valuable asset for individuals and organizations, and traditional backup methods are limited in scalability, accessibility, and reliability. Cloud computing platforms offer advanced backup and recovery services for secure, automated, and real-time data protection. \n([23cs097_HetSoni.pdf — Page 1](#))",
+    "sources": [
+      {
+        "filename": "23cs097_HetSoni.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 596,
+      "outputTokens": 60,
+      "totalTokens": 656,
+      "cost": 0.0004,
+      "latencyMs": 589,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-16T10:16:36.041Z"
+  },
+  {
+    "id": "29f48493-3fb7-4ebb-9a64-0b3b4da9c28d",
+    "question": "explain the introduction ",
+    "answer": "### Introduction Explanation\nThe introduction, as stated in [23cs097_HetSoni.pdf — Page 1], highlights the importance of data in today's digital era. It mentions that traditional backup methods, such as physical storage devices, have limitations in terms of scalability, accessibility, and reliability. \n\nAccording to the text, cloud computing platforms like Amazon Web Services (AWS), Google Cloud Platform (GCP), and Microsoft Azure offer advanced backup and recovery services. These services enable secure, automated, and real-time data protection, making them a vital component in modern computing environments. \n\nSource: [23cs097_HetSoni.pdf — Page 1]",
+    "sources": [
+      {
+        "filename": "23cs097_HetSoni.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 592,
+      "outputTokens": 116,
+      "totalTokens": 708,
+      "cost": 0.00044,
+      "latencyMs": 782,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-16T10:37:35.792Z"
+  },
+  {
+    "id": "74bf9d35-60ec-4528-aa3c-ce9b67e5ff37",
+    "question": "explain  Cloud-Based Backup Services ",
+    "answer": "### Cloud-Based Backup Services\nCloud-based backup services provide a range of features to ensure secure and efficient data protection. As mentioned in [23cs097_HetSoni.pdf — Page 1](#), these services include:\n* **Automated Backup**: Scheduled backups without manual intervention\n* **Data Encryption**: Protection using advanced encryption methods\n* **Versioning**: Multiple versions of files stored for recovery\n* **Disaster Recovery**: Quick restoration after data loss\n* **Remote Access**: Data accessible from anywhere\n\nSome popular tools for cloud-based backup services are:\n* Dropbox\n* Google Drive\n* OneDrive\n\nThese services allow for automatic backups, encryption, and easy recovery, making them a reliable option for data protection. (Source: [23cs097_HetSoni.pdf — Page 1](#))",
+    "sources": [
+      {
+        "filename": "23cs097_HetSoni.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 958,
+      "outputTokens": 140,
+      "totalTokens": 1098,
+      "cost": 0.00068,
+      "latencyMs": 858,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T04:25:07.709Z"
+  },
+  {
+    "id": "9d4ca201-263c-458d-85aa-ecb8b0805e48",
+    "question": "explain  Cloud Adoption Strategy ",
+    "answer": "### Cloud Adoption Strategy\nAccording to [23cs097_HetSoni.pdf — Page 1], the cloud adoption strategy for Tech Secure Ltd. involved the following steps:\n* Adopting **AWS cloud services** for backup and recovery\n* Using **AWS S3** for storing backup data\n* Implementing **automated backup schedules**\n* Enabling **encryption** for sensitive files\n* Integrating **disaster recovery systems**\n\nThis strategy was implemented to address the company's need for a scalable and secure solution to protect sensitive business data and ensure quick recovery.",
+    "sources": [
+      {
+        "filename": "23cs097_HetSoni.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 958,
+      "outputTokens": 103,
+      "totalTokens": 1061,
+      "cost": 0.00065,
+      "latencyMs": 812,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T04:37:12.485Z"
+  },
+  {
+    "id": "e4e096ff-2255-4546-a593-be20dc06d1d6",
+    "question": "What skills does Het Soni have?",
+    "answer": "### Skills of Het Soni\nHet Soni has the following skills:\n* **Languages:** C, C++, Java, Python, JavaScript\n* **Frontend:** React.js, HTML, CSS, Tailwind CSS\n* **Backend & Databases:** Node.js, Express.js, REST APIs, MongoDB\n* **Tools & Platforms:** Git, GitHub, VS Code, Postman\n* **Concepts:** Data Structures & Algorithms, OOP, Agile, JWT Authentication, Redux, MVC Architecture\n* **Soft Skills:** Team Leadership, Communication, Problem Solving\n(Source: hetsoni_resume.pdf — Page 1)",
+    "sources": [
+      {
+        "filename": "hetsoni_resume.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 470,
+      "outputTokens": 90,
+      "totalTokens": 560,
+      "cost": 0.00035,
+      "latencyMs": 596,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T04:42:15.333Z"
+  },
+  {
+    "id": "4ca0be79-cbc7-4e1c-a92c-0938aea75897",
+    "question": "explain Benefits of Cloud-Based Backup ",
+    "answer": "### Benefits of Cloud-Based Backup\nThe benefits of cloud-based backup are outlined in section 4 of the provided notes [23cs097_HetSoni.pdf — Page 1]. The key advantages include:\n* **On-demand storage resources**: Cloud-based backup provides storage resources that can be scaled up or down as needed.\n* **Cost-effective compared to physical storage**: Cloud-based backup is more cost-effective than traditional physical storage methods.\n* **High data availability and durability**: Cloud-based backup ensures that data is highly available and durable, reducing the risk of data loss.\n* **Remote accessibility from any location**: Cloud-based backup allows users to access their data from anywhere, at any time.\n* **Automated backup processes**: Cloud-based backup automates the backup process, reducing the need for manual intervention.\n* **Improved disaster recovery capabilities**: Cloud-based backup provides quick and efficient disaster recovery capabilities, minimizing downtime and data loss.\n\nSource: [23cs097_HetSoni.pdf — Page 1], section 4.",
+    "sources": [
+      {
+        "filename": "23cs097_HetSoni.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 959,
+      "outputTokens": 188,
+      "totalTokens": 1147,
+      "cost": 0.00071,
+      "latencyMs": 966,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T04:46:41.138Z"
+  },
+  {
+    "id": "4e4837e4-6ea6-4579-979e-291bb9f4646c",
+    "question": "What skills does Het Soni have?",
+    "answer": "### Skills of Het Soni\nHet Soni has the following skills:\n* **Languages**: C, C++, Java, Python, JavaScript\n* **Frontend**: React.js, HTML, CSS, Tailwind CSS\n* **Backend & Databases**: Node.js, Express.js, REST APIs, MongoDB\n* **Tools & Platforms**: Git, GitHub, VS Code, Postman\n* **Concepts**: Data Structures & Algorithms, OOP, Agile, JWT Authentication, Redux, MVC Architecture\n* **Soft Skills**: Team Leadership, Communication, Problem Solving\n(Source: hetsoni_resume.pdf — Page 1)",
+    "sources": [
+      {
+        "filename": "hetsoni_resume.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 470,
+      "outputTokens": 90,
+      "totalTokens": 560,
+      "cost": 0.00035,
+      "latencyMs": 631,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T04:59:22.765Z"
+  },
+  {
+    "id": "c3d99852-a325-424b-b885-3f90fd2d4800",
+    "question": "explain the introduction ",
+    "answer": "### Introduction to Het Soni\nThe introduction provides an overview of Het Soni's profile, as seen on [hetsoni_resume.pdf — Page 1]. \nIt includes his:\n* Contact information: phone number (+91 7069238253), email (hetsoni166@gmail.com), LinkedIn, and GitHub.\n* Technical skills, such as programming languages (C, C++, Java, Python, JavaScript), frontend and backend technologies, and tools.\n* Education background, including his current enrollment in B.Tech in Computer Science & Engineering at CSPIT, CHARUSAT University, and his previous education at A.G. High School.\nThis introduction serves as a brief summary of Het Soni's professional and educational background.",
+    "sources": [
+      {
+        "filename": "hetsoni_resume.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 468,
+      "outputTokens": 123,
+      "totalTokens": 591,
+      "cost": 0.00037,
+      "latencyMs": 689,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T05:01:33.661Z"
+  },
+  {
+    "id": "be3e4cef-9117-42ac-a79d-e95ed34ab17a",
+    "question": " Conclusion",
+    "answer": "### Conclusion\nAccording to [23cs097_HetSoni.pdf — Page 1], the conclusion is: \nCloud-based backup and file recovery solutions have transformed data management by providing secure, scalable, and efficient systems for protecting critical information. Organizations increasingly rely on cloud services to ensure business continuity and disaster recovery. With advancements in AI, hybrid cloud, and security technologies, cloud backup solutions will continue to evolve and become more efficient and reliable. ([23cs097_HetSoni.pdf — Page 1], section 7)",
+    "sources": [
+      {
+        "filename": "23cs097_HetSoni.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 482,
+      "outputTokens": 95,
+      "totalTokens": 577,
+      "cost": 0.00036,
+      "latencyMs": 478,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T05:05:40.852Z"
+  },
+  {
+    "id": "0adcce31-6c8e-4482-a2d7-98b1b0f080e2",
+    "question": "explain cloud adoption strategy ",
+    "answer": "I could not find this information in the uploaded notes. \n\nThe provided context, [hetsoni_resume.pdf — Page 1], does not contain any information about a cloud adoption strategy. The content is focused on the individual's resume, including their skills, education, experience, projects, and certifications.",
+    "sources": [
+      {
+        "filename": "hetsoni_resume.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 469,
+      "outputTokens": 56,
+      "totalTokens": 525,
+      "cost": 0.00032,
+      "latencyMs": 465,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T05:15:52.095Z"
+  },
+  {
+    "id": "159d8bb1-a33f-4225-9deb-c655b92a88d5",
+    "question": "What skills does Het Soni have?",
+    "answer": "### Skills of Het Soni\nHet Soni has the following skills:\n* **Languages:** C, C++, Java, Python, JavaScript\n* **Frontend:** React.js, HTML, CSS, Tailwind CSS\n* **Backend & Databases:** Node.js, Express.js, REST APIs, MongoDB\n* **Tools & Platforms:** Git, GitHub, VS Code, Postman\n* **Concepts:** Data Structures & Algorithms, OOP, Agile, JWT Authentication, Redux, MVC Architecture\n* **Soft Skills:** Team Leadership, Communication, Problem Solving\n(Source: hetsoni_resume.pdf — Page 1)",
+    "sources": [
+      {
+        "filename": "hetsoni_resume.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 470,
+      "outputTokens": 90,
+      "totalTokens": 560,
+      "cost": 0.00035,
+      "latencyMs": 614,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T05:19:04.991Z"
+  },
+  {
+    "id": "80376cc8-1dc0-4c63-a4b9-1ae7c0754b7a",
+    "question": " Future Trends in Cloud Backup Solutions",
+    "answer": "### Future Trends in Cloud Backup Solutions\nAccording to [23cs097_HetSoni.pdf — Page 1], the future trends in cloud backup solutions include:\n* **Hybrid Cloud Backup**: Combining local and cloud storage\n* **AI-based backup optimization and anomaly detection**: Using artificial intelligence to optimize backup processes and detect anomalies\n* **Blockchain for secure data integrity**: Utilizing blockchain technology to ensure secure data integrity\n* **Serverless backup architectures**: Implementing serverless architectures for backup solutions\n* **Edge computing for faster recovery**: Using edge computing to enable faster recovery\n* **Enhanced cybersecurity measures**: Implementing advanced cybersecurity measures to protect cloud backup solutions [23cs097_HetSoni.pdf — Page 1, Section 6].",
+    "sources": [
+      {
+        "filename": "23cs097_HetSoni.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 959,
+      "outputTokens": 134,
+      "totalTokens": 1093,
+      "cost": 0.00067,
+      "latencyMs": 716,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T05:20:09.455Z"
+  },
+  {
+    "id": "4a79cce4-41ae-4e62-a6b0-ae52c856998c",
+    "question": "What skills does Het Soni have?",
+    "answer": "### Skills of Het Soni\nHet Soni has a variety of skills, including:\n* **Languages**: C, C++, Java, Python, JavaScript\n* **Frontend**: React.js, HTML, CSS, Tailwind CSS\n* **Backend & Databases**: Node.js, Express.js, REST APIs, MongoDB\n* **Tools & Platforms**: Git, GitHub, VS Code, Postman\n* **Concepts**: Data Structures & Algorithms, OOP, Agile, JWT Authentication, Redux, MVC Architecture\n* **Soft Skills**: Team Leadership, Communication, Problem Solving\n(Chunk: 9735f3f1, Page 1)",
+    "sources": [
+      {
+        "filename": "hetsoni_resume.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 499,
+      "outputTokens": 91,
+      "totalTokens": 590,
+      "cost": 0.00037,
+      "latencyMs": 632,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T05:32:21.438Z"
+  }
+]

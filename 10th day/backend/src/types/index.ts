@@ -20,6 +20,7 @@ export interface Chunk {
   pageEnd: number;
   content: string;
   tokenCount: number;
+  embedding?: number[];
 }
 
 export interface ChatMessage {
@@ -55,10 +56,21 @@ export interface QueryRequest {
   documentIds?: string[];
 }
 
+export interface ChunkResult {
+  id: string;
+  documentId: string;
+  filename: string;
+  pageStart: number;
+  pageEnd: number;
+  content: string;
+  score: number;
+}
+
 export interface QueryResponse {
   answer: string;
   sources: Source[];
   usage: TokenUsage;
+  chunks: ChunkResult[];
 }
 
 export interface PdfUploadResponse {

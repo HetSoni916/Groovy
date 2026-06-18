@@ -5,27 +5,34 @@
     "dev": "ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "benchmark": "ts-node src/benchmark/runner.ts",
+    "reranker": "ts-node src/benchmark/reranker-test.ts",
+    "chroma": "ts-node --transpileOnly -e \"process.env.TRANSFORMERS_CACHE = 'H:\\\\Groovy\\\\10th day\\\\backend\\\\storage\\\\chroma\\\\cache'; const oldWarn = console.warn; console.warn = function(){}; const { ChromaClient } = require('chromadb'); (async function() { const c = new ChromaClient({ host: 'localhost', port: 8000 }); const col = await c.getCollection({ name: 'ask-my-notes' }); const count = await col.count(); const data = await col.peek({ limit: count }); console.warn = oldWarn; console.log('ChromaDB Collection: ask-my-notes (' + count + ' vectors)\\n'); var line = '+------+------+----------------------------------------+----------+'; console.log(line); console.log('| ID   | Page | Text                                    | Doc      |'); console.log(line); for (let i = 0; i < data.ids.length; i++) { const m = data.metadatas[i]; const doc = data.documents[i].replace(/\\n/g, ' ').substring(0, 36); const id = data.ids[i].substring(0, 4); console.log('| ' + id + ' | ' + m.pageStart + '    | ' + doc.padEnd(36).substring(0,36) + ' | ' + m.filename.substring(0,8).padEnd(8) + ' |'); } console.log(line); })()\""
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "@xenova/transformers": "^2.17.2",
+    "chromadb": "^3.4.3",
+    "cohere-ai": "^8.0.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",
     "pdf-parse": "^1.1.1",
     "uuid": "^9.0.0",
-    "dotenv": "^16.3.1"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
     "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.11",
     "@types/multer": "^1.4.11",
-    "@types/uuid": "^9.0.7",
     "@types/node": "^20.10.0",
     "@types/pdf-parse": "^1.1.4",
-    "typescript": "^5.3.2",
-    "ts-node": "^10.9.2",
+    "@types/uuid": "^9.0.7",
     "jest": "^29.7.0",
-    "@types/jest": "^29.5.11",
-    "ts-jest": "^29.1.1"
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.2"
   }
 }

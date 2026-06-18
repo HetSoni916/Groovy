@@ -1,6 +1,9 @@
 import { Chunk } from '../types';
 import { config } from '../config';
 import { chunkerService } from './chunker';
+import { embeddingService } from './embedding.service';
+import { vectorStore } from './vectorStore';
+import { rerankerService } from './reranker.service';
 import { storage } from '../utils/storage';
 
 interface ScoredChunk {
@@ -9,22 +12,41 @@ interface ScoredChunk {
 }
 
 export class RetrievalService {
-  search(question: string, documentIds?: string[]): ScoredChunk[] {
-    const chunks = chunkerService.getChunksForQuery(documentIds);
-    if (chunks.length === 0) return [];
+  async search(question: string, documentIds?: string[]): Promise<ScoredChunk[]> {
+    const queryEmbedding = await embeddingService.generateEmbedding(question);
 
-    const queryTerms = this.extractTerms(question);
-    const scored: ScoredChunk[] = [];
+    let results: ScoredChunk[] = [];
 
-    for (const chunk of chunks) {
-      const score = this.scoreChunk(chunk, queryTerms);
-      if (score > 0) {
-        scored.push({ chunk, score });
-      }
+    if (queryEmbedding.length > 0) {
+      results = await vectorStore.search(queryEmbedding, config.maxChunksSelected, documentIds);
+      if (results.length > 0) return results;
     }
 
+    const chunks = chunkerService.getChunksForQuery(documentIds);
+    if (chunks.length === 0) return [];
+    results = this.tfidfSearch(question, chunks);
+
+    if (config.useReranker && rerankerService.isAvailable()) {
+      const firstPassK = Math.min(config.rerankerFirstPassK, results.length);
+      const candidates = results.slice(0, firstPassK);
+      const reranked = await rerankerService.rerank(question, candidates.map(r => r.chunk), {
+        topK: config.rerankerTopK,
+      });
+      return reranked.map(r => ({ chunk: r.chunk, score: r.score }));
+    }
+
+    return results;
+  }
+
+  private tfidfSearch(question: string, chunks: Chunk[], topK?: number): ScoredChunk[] {
+    const queryTerms = this.extractTerms(question);
+    const scored: ScoredChunk[] = [];
+    for (const chunk of chunks) {
+      const score = this.scoreChunk(chunk, queryTerms);
+      if (score > 0) scored.push({ chunk, score });
+    }
     scored.sort((a, b) => b.score - a.score);
-    return scored.slice(0, config.maxChunksSelected);
+    return scored.slice(0, topK || config.maxChunksSelected);
   }
 
   private extractTerms(text: string): string[] {
@@ -70,9 +92,8 @@ export class RetrievalService {
       const first200 = chunkLower.slice(0, 200);
       return first200.includes(term);
     }) ? 0.5 : 0;
-    score += titleBonus;
 
-    return score;
+    return score + exactPhraseBonus + titleBonus;
   }
 
   private hasExactPhrase(chunkLower: string, queryTerms: string[]): boolean {
@@ -94,7 +115,7 @@ export class RetrievalService {
       const pageRef = chunk.pageStart === chunk.pageEnd
         ? `Page ${chunk.pageStart}`
         : `Pages ${chunk.pageStart}-${chunk.pageEnd}`;
-      const section = `[${filename} — ${pageRef}]\n${chunk.content}`;
+      const section = `[Chunk ${chunk.id.substring(0,8)}] ${filename} — ${pageRef}\n${chunk.content}`;
       const sectionTokens = Math.ceil(section.length / 4);
 
       if (totalTokens + sectionTokens > maxTokens) break;

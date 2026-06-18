@@ -20,10 +20,21 @@ export interface TokenUsage {
   model: string;
 }
 
+export interface ChunkResult {
+  id: string;
+  documentId: string;
+  filename: string;
+  pageStart: number;
+  pageEnd: number;
+  content: string;
+  score: number;
+}
+
 export interface QueryResponse {
   answer: string;
   sources: Source[];
   usage: TokenUsage;
+  chunks: ChunkResult[];
 }
 
 export interface PdfUploadResponse {
