@@ -1,114 +1,314 @@
-# Day 14: LangChain Agentic AI Assistant
+# Day 14: Three AI Agents — LangChain, LlamaIndex & Pure SDK
 
-## Context
+## Task Prompts
 
-Day 12 had an advanced RAG-based "Ask My Notes" document assistant with PDF upload and parsing, multiple chunking strategies including fixed-size, semantic, sliding-window, and hierarchical chunking, embedding generation using OpenAI or Voyage models, ChromaDB vector database for storing embeddings, vector similarity retrieval, Cohere reranking for second-pass retrieval, LLM-generated answers with source page citations, and cost and token telemetry. Day 13 had a manual multi-tool AI agent using Groq LLM with a manual tool-calling loop, JSON schema based tool definitions, a calculator tool supporting addition, subtraction, multiplication, and division, a web search tool using Tavily API or DuckDuckGo, a Slack webhook tool for sending messages, and manual logic for deciding which tool to execute.
+### Prompt 1: LangChain Agent
 
-## Objective
+> Convert the existing Day 12 and Day 13 systems into a single LangChain-powered Agentic AI Assistant without removing any existing functionality, by reusing the current implementations and refactoring them into LangChain tools. Replace the manual Groq tool loop with LangChain's AgentExecutor. The agent should understand user requests, decide which tools are needed, execute one or multiple tools in sequence, observe tool results, continue reasoning until the final answer is ready, maintain conversation history, and support streaming responses.
 
-The goal was to convert the existing Day 12 and Day 13 systems into a single LangChain-powered Agentic AI Assistant without removing any existing functionality, by reusing the current implementations and refactoring them into LangChain tools. The manual Groq tool loop was replaced with LangChain's AgentExecutor, allowing the agent to understand user requests, decide which tools are needed, execute one or multiple tools in sequence, observe tool results, continue reasoning until the final answer is ready, maintain conversation history, and support streaming responses.
+### Prompt 2: LlamaIndex Agent
 
-## Architecture
+> Build the existing AI agent using LlamaIndex instead of LangChain. Create a LlamaIndex-based agent that can use multiple tools, perform reasoning, and execute the correct tools based on the user's request. Use the latest LlamaIndex Agent framework and Query Engine. Implement the existing tools as LlamaIndex FunctionTools.
 
-The final architecture follows: User Query goes into the LangChain AgentExecutor which routes to Calculator Tool, Web Search Tool, Slack Tool, or Ask My Notes Tool. The Ask My Notes Tool connects to the existing RAG Pipeline which uses ChromaDB, Cohere Reranker, and LLM Answer generation with source page citations.
+### Prompt 3: Pure SDK Agent (Manual Loop)
 
-Four LangChain tools were created by wrapping the existing logic. The Calculator Tool reuses the existing calculator implementation supporting add, subtract, multiply, and divide operations while handling invalid operations and division by zero gracefully. The Web Search Tool reuses the existing DuckDuckGo search implementation where the agent decides when real-time information is required and search results are summarized before presenting to the user. The Slack Tool reuses the existing Slack webhook implementation allowing the agent to send messages or summaries to Slack. The Ask My Notes Tool (RAG Tool) was created as a LangChain tool by wrapping the existing Day 12 RAG pipeline, accepting a natural language question, generating query embeddings, performing vector similarity search in ChromaDB, retrieving relevant document chunks, applying Cohere reranking, and generating a final RAG answer with proper page citations.
+> Build the same agent using only a pure LLM SDK without using any frameworks like LangChain, LlamaIndex, or any agent orchestration library. Implement the complete Reason → Act → Observe loop manually using the native Groq SDK. Reuse the existing business logic for all tools. The manual loop should support multiple iterations and multiple tool calls for a single user request.
 
-The LangChain agent supports executing multiple tools in a single user request. For example, searching today's AI news and sending a summary to Slack chains the Web Search Tool through summarization to the Slack Tool. Finding the project deadline in notes and notifying the team on Slack chains the Ask My Notes Tool through deadline extraction to the Slack Tool. Finding the latest AI API pricing, comparing it with information in notes, calculating the difference, and sending the report to Slack chains the Web Search Tool through the Ask My Notes Tool through the Calculator Tool to the Slack Tool.
+---
 
-The implementation uses LangChain's AgentExecutor for managing the agent loop, the LangChain Tool abstraction, a proper system prompt defining agent behavior, conversation memory via LangGraph checkpointer, streaming responses, and intermediate execution logging. The agent loop follows the pattern of Thought, Choose Tool, Execute Tool, Observe Result, Decide Next Action, and Final Answer.
+## Three Implementations — One Backend
 
-## Project Structure
+The project now has **three parallel agent implementations**, all sharing the same underlying services (ChromaDB, embeddings, retrieval, LLM):
+
+| # | Agent | Framework | Agent Type | Tool Type | LLM Integration | Location |
+|---|-------|-----------|------------|-----------|-----------------|----------|
+| 1 | **LangChain** | `@langchain/core`, `langchain` | `createReactAgent` (LangGraph) | `DynamicStructuredTool` (Zod) | `@langchain/groq`, `@langchain/ollama` | `src/agent/` + `src/tools/` |
+| 2 | **LlamaIndex** | `llamaindex` | `ReActAgent` | `FunctionTool` (JSON Schema) | `@llamaindex/groq`, `@llamaindex/ollama` | `src/llama/` |
+| 3 | **Pure SDK** | `groq-sdk` (no framework) | Manual Reason→Act→Observe loop | JSON Schema + executor | Groq SDK + Ollama REST API | `src/sdk/` |
+
+---
+
+## Architecture Comparison
+
+### 1. LangChain Agent (`src/agent/` + `src/tools/`)
+
+```
+User Query → LangGraph ReactAgent → Tool Selection → Execute → Observe → Loop → Final Answer
+                                       │
+                              ┌────────┼────────┬──────────┬──────────────┐
+                              ▼        ▼        ▼          ▼              │
+                          Calculator  Web    Slack    Ask My Notes ───────┘
+                          (LangChain DynamicStructuredTool with Zod)
+```
+
+- Uses `createReactAgent` from LangGraph with `MemorySaver` checkpointer
+- 4 `DynamicStructuredTool`s with Zod schema validation
+- SSE streaming via `runAgentExecutorStream()`
+- Conversation memory via LangGraph checkpointer
+
+### 2. LlamaIndex Agent (`src/llama/`)
+
+```
+User Query → ReActAgent → Tool Selection → Execute → Observe → Loop → Final Answer
+                               │
+                      ┌────────┼────────┬──────────┬──────────────┐
+                      ▼        ▼        ▼          ▼              │
+                  Calculator  Web    Slack    Ask My Notes ───────┘
+                  (LlamaIndex FunctionTool with JSON Schema)
+```
+
+- Uses `ReActAgent` with native tool calling
+- 4 `FunctionTool`s wrapping same business logic
+- Built-in conversation history via `chatHistory` parameter
+- SSE streaming via `agent.chat({stream: true})`
+
+### 3. Pure SDK Agent (`src/sdk/`) — Manual Loop
+
+```
+User Query → LLM Call (with tool schemas) ──→ Has tool_call? ──→ Execute Tool ──→ Add result to messages
+                  │                                                    │
+                  └────────────────── No ──────────────────────────────┘
+                                    │
+                                    ▼
+                              Final Answer
+```
+
+- No agent framework — pure `groq-sdk` / Ollama REST API
+- Manual Reason→Act→Observe loop (8-step process)
+- JSON Schema tool definitions passed directly to LLM
+- Tool executor maps function names to implementations
+- Ollama support via JSON prompt-based tool selection (regex-parsed)
+- Full iteration tracking, token usage, and latency telemetry
+
+---
+
+## File Structure
 
 ```
 src/
-├── agent/
-│   ├── createAgent.ts       LangChain ReactAgent creation with ChatGroq
-│   ├── executor.ts          AgentExecutor wrapper with invoke and stream modes
-│   ├── memory.ts            LangGraph MemorySaver checkpointer for persistence
-│   ├── logger.ts            Detailed structured logging for all operations
-│   └── systemPrompt.ts      System prompt defining agent behavior
-├── tools/
-│   ├── calculatorTool.ts    Calculator tool wrapping existing math logic
-│   ├── webSearchTool.ts     Web search tool wrapping DuckDuckGo
-│   ├── slackTool.ts         Slack tool wrapping webhook integration
-│   └── askMyNotesTool.ts    RAG tool wrapping ChromaDB + reranker + Groq
-├── services/
-│   ├── agent.service.ts     Refactored to use LangChain AgentExecutor
-│   ├── anthropic.service.ts Existing Groq LLM service (unchanged)
-│   ├── chunker.ts           Existing chunking strategies (unchanged)
-│   ├── embedding.service.ts Existing embedding generation (unchanged)
-│   ├── pdfParser.ts         Existing PDF parser (unchanged)
-│   ├── reranker.service.ts  Existing Cohere reranker (unchanged)
-│   ├── retrieval.ts         Existing retrieval pipeline (unchanged)
-│   └── vectorStore.ts       Existing ChromaDB client (unchanged)
-├── controllers/
-│   ├── agentController.ts   Updated with LangChain + SSE streaming
-│   ├── chatController.ts    Existing chat controller (unchanged)
-│   └── pdfController.ts     Existing PDF controller (unchanged)
+├── agent/                           # LangChain agent
+│   ├── createAgent.ts               LangGraph ReactAgent factory
+│   ├── executor.ts                  Invoke + stream wrappers
+│   ├── memory.ts                    MemorySaver checkpointer
+│   ├── logger.ts                    Structured logging
+│   └── systemPrompt.ts              Agent system prompt
+├── tools/                           # LangChain tools
+│   ├── calculatorTool.ts            DynamicStructuredTool (Zod)
+│   ├── webSearchTool.ts             DynamicStructuredTool (Zod)
+│   ├── slackTool.ts                 DynamicStructuredTool (Zod)
+│   └── askMyNotesTool.ts            DynamicStructuredTool (Zod)
+├── llama/                           # LlamaIndex agent
+│   ├── index.ts                     Public exports
+│   ├── config.ts                    LLM & agent config
+│   ├── logger.ts                    Structured logging
+│   ├── agent.ts                     ReActAgent + runAgent()
+│   └── tools/
+│       ├── calculator.ts            FunctionTool
+│       ├── webSearch.ts             FunctionTool
+│       ├── slack.ts                 FunctionTool
+│       └── askMyNotes.ts            FunctionTool
+├── sdk/                             # Pure SDK agent (no framework)
+│   ├── index.ts                     Public exports
+│   ├── config.ts                    Agent config from env
+│   ├── logger.ts                    Detailed per-step logging
+│   ├── types.ts                     TypeScript types
+│   ├── llm.ts                       Groq SDK + Ollama REST wrappers
+│   ├── schemas.ts                   Tool JSON Schema definitions
+│   ├── executor.ts                  Tool call → implementation mapper
+│   ├── conversation.ts              Conversation state manager
+│   ├── agent.ts                     Manual Reason→Act→Observe loop
+│   ├── tools/
+│   │   ├── calculator.ts            Pure function (extracted)
+│   │   ├── webSearch.ts             Pure function (extracted)
+│   │   ├── slack.ts                 Pure function (extracted)
+│   │   └── askMyNotes.ts            RAG pipeline wrapper
+│   ├── cli/
+│   │   └── sdk-cli.ts               Interactive CLI + tests
+│   └── controllers/
+│       └── sdkController.ts         Express controller
 ├── cli/
-│   └── agent-cli.ts         Updated CLI with LangChain + multi-step tests
-├── config/
-│   └── index.ts             Existing config (unchanged)
-├── middleware/
-│   ├── errorHandler.ts      Existing error handler (unchanged)
-│   ├── upload.ts            Existing upload middleware (unchanged)
-│   └── validate.ts          Existing validation middleware (unchanged)
+│   ├── agent-cli.ts                 LangChain agent CLI
+│   └── llama-cli.ts                 LlamaIndex agent CLI
+├── controllers/
+│   ├── agentController.ts           LangChain agent controller
+│   └── llamaController.ts           LlamaIndex agent controller
 ├── routes/
-│   └── index.ts             Updated with LangChain agent route
-├── schemas/
-│   └── index.ts             Existing Zod schemas (unchanged)
-├── types/
-│   └── index.ts             Existing type definitions (unchanged)
-├── utils/
-│   ├── pricing.ts           Existing pricing utils (unchanged)
-│   ├── storage.ts           Existing storage utils (unchanged)
-│   └── tokenizer.ts         Existing tokenizer (unchanged)
-├── app.ts                   Existing Express app (unchanged)
-└── server.ts                Existing server entry (unchanged)
+│   └── index.ts                     Routes for all 3 agents
+├── services/                        (Shared — unchanged)
+├── config/                          (Shared — unchanged)
+└── ...                              (Everything else — unchanged)
 ```
 
-## Environment Variables
+---
 
-Required in `.env`:
+## How the Pure SDK Agent Works
+
+### The Manual Reason → Act → Observe Loop
+
 ```
-GROQ_API_KEY=your_groq_api_key
-PORT=3001
-MAX_FILE_SIZE_MB=50
-EMBEDDING_MODEL=Xenova/all-MiniLM-L6-v2
-# Optional: COHERE_API_KEY with USE_RERANKER=true for second-pass retrieval
-# Optional: SLACK_WEBHOOK_URL for Slack tool
+1. Receive user input
+2. Add to conversation history (system + user messages)
+3. Send messages + tool schemas to LLM via groq-sdk
+4. Parse LLM response:
+   - If tool_calls present → extract name + arguments
+   - If text response → this is the final answer
+5. For each tool call:
+   a. Log the tool selection and arguments
+   b. Execute via executor.ts (maps name → implementation)
+   c. Add tool result back to conversation as a tool message
+6. Go back to step 3 (send updated conversation to LLM)
+7. Repeat until LLM produces a text response (no tool calls)
+8. Return final answer with iteration/token/latency metadata
 ```
+
+### LLM Integration
+
+- **Groq** (native): Uses `groq-sdk` with OpenAI-compatible `tools` parameter for function calling. The LLM natively returns `tool_calls` in the response.
+- **Ollama** (prompt-based): Since Ollama doesn't support native function calling, the system prompt instructs it to respond with `{"tool": "<name>", "args": {...}}` JSON when it wants to use a tool. A regex parser extracts this.
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|---|---|
+| No framework deps on agent files | `groq-sdk` is the only LLM dependency; no LangChain/LlamaIndex imports |
+| Pure functions extracted | Calculator, web search, slack logic extracted from LangChain tool wrappers into standalone async functions |
+| RAG pipeline reused | `askMyNotes` calls the same `retrievalService` + `groqService` as the other two agents |
+| Conversation state managed | `ConversationManager` class tracks messages, appends tool results, provides full history to LLM |
+| Iteration cap | `maxIterations` config (default 10) prevents infinite loops |
+| Token tracking | Aggregates across all LLM calls in the loop |
+| Ollama fallback | Prompt-based tool selection with JSON parsing (no breaking changes) |
+
+---
 
 ## Usage
 
+### Prerequisites
+
 ```powershell
-# Start ChromaDB (required for Ask My Notes tool)
-chroma.exe run --path "storage\chroma" --port 8000
-
-# Start the server
-npm run dev
-
-# Interactive agent CLI
-npm run agent
-
-# Automated tests
-npm run agent:test
-
-# API endpoint
-curl -X POST http://localhost:3001/api/agent/ask -H "Content-Type: application/json" -d '{"question": "What is 15 * 8?"}'
-
-# Streaming API
-curl -X POST http://localhost:3001/api/agent/ask -H "Content-Type: application/json" -d '{"question": "Search AI news", "stream": true}'
+cd H:\Groovy\10th day\backend
+npm install
 ```
 
-## Test Cases
+### Environment (`.env`)
 
-Test Case 1: User asks "Calculate 984 × 75" — only calculator tool executes.
-Test Case 2: User asks "What is the internship deadline in my notes?" — only Ask My Notes tool executes with page citations.
-Test Case 3: User asks "Find today's AI news and send a summary to Slack" — Web Search Tool followed by Slack Tool.
-Test Case 4: User asks "Find current AI API pricing, compare it with my stored notes, calculate the price difference, and send a report to Slack" — Web Search Tool through Ask My Notes Tool through Calculator Tool through Slack Tool.
+```env
+LLM_PROVIDER=ollama           # 'ollama' (local) or 'groq' (cloud)
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2:3b
+GROQ_API_KEY=gsk_...          # Uncomment for cloud mode
+```
 
-## Error Handling
+### Run All Three Agents
 
-All tools have proper error handling for missing API keys, invalid tool inputs, calculator errors including division by zero, search API failures, Slack webhook failures, ChromaDB connection issues, embedding failures, and LLM failures. The agent never crashes because a tool fails — it returns meaningful error messages and continues gracefully when possible.
+```powershell
+# ── LangChain Agent ──
+npm run agent                 # Interactive CLI
+npm run agent:test            # Automated tests
+
+# ── LlamaIndex Agent ──
+npm run llama                 # Interactive CLI
+npm run llama:test            # Automated tests
+
+# ── Pure SDK Agent (Manual Loop) ──
+npm run sdk                   # Interactive CLI
+npm run sdk:test              # Automated tests
+
+# ── HTTP Endpoints (server running) ──
+curl -X POST http://localhost:3001/agent/ask    -H "Content-Type: application/json" -d "{\"question\": \"What is 15 * 8?\"}"
+curl -X POST http://localhost:3001/llama/ask    -H "Content-Type: application/json" -d "{\"question\": \"What is 15 * 8?\"}"
+curl -X POST http://localhost:3001/sdk/ask      -H "Content-Type: application/json" -d "{\"question\": \"What is 15 * 8?\"}"
+```
+
+### Pure SDK Agent CLI
+
+```
+You: What is 984 * 75?
+
+Agent: Let me calculate that.
+
+984 × 75 = 73,800
+
+[1 iterations, 2345ms, 512 tokens]
+```
+
+### Pure SDK Agent HTTP Response
+
+```json
+{
+  "question": "What is 15 + 27?",
+  "answer": "15 + 27 = 42",
+  "iterations": 1,
+  "latencyMs": 1842,
+  "tokens": { "input": 425, "output": 32, "total": 457 }
+}
+```
+
+---
+
+## Multi-Step Workflow Support (All Three Agents)
+
+All three agents support the same multi-tool chains:
+
+| User Request | Tool Chain |
+|---|---|
+| "What is 984 * 75?" | Calculator |
+| "What is the internship deadline in my notes?" | Ask My Notes |
+| "Search latest AI news" | Web Search |
+| "Calculate 984 * 75 and send it to Slack" | Calculator → Slack |
+| "Search AI news and send a summary to Slack" | Web Search → LLM summarizes → Slack |
+| "Find the deadline in my notes and notify my team" | Ask My Notes → Extract → Slack |
+| "Search AI API pricing, compare with notes, calculate difference, send to Slack" | Web Search → Ask My Notes → Calculator → Slack |
+
+---
+
+## Comparison Summary
+
+| Aspect | LangChain | LlamaIndex | Pure SDK |
+|---|---|---|---|
+| Lines of agent code | ~200 | ~120 | ~250 |
+| External deps | `@langchain/core`, `langchain`, `@langchain/groq`, `@langchain/ollama` | `llamaindex`, `@llamaindex/groq`, `@llamaindex/ollama` | `groq-sdk` only |
+| Tool definition | Zod schemas | JSON Schema | JSON Schema |
+| Streaming | SSE via event callbacks | Built-in `stream: true` | Manual chunk collect |
+| Conversation memory | LangGraph `MemorySaver` | Built-in chatHistory | Custom `ConversationManager` |
+| Learning curve | Medium | Low | High (manual loop) |
+| Debugging | Opaque (framework magic) | Semi-opaque | Fully transparent |
+| Flexibility | Framework-constrained | Framework-constrained | Total control |
+
+---
+
+## Error Handling (All Three Agents)
+
+All agents share identical error handling patterns:
+- Invalid tool arguments → descriptive error string
+- Calculator: division by zero, missing operands
+- Web search: fetch failures, empty results
+- Slack: missing webhook URL, API errors
+- RAG: ChromaDB connection issues, embedding failures, empty results
+- LLM: rate limits (429), network errors, empty responses
+- No tool ever crashes the agent — errors are returned as tool results for the LLM to interpret
+
+---
+
+## Dependencies
+
+### LangChain Agent
+- `@langchain/core`, `@langchain/groq`, `@langchain/ollama`, `langchain`
+
+### LlamaIndex Agent
+- `llamaindex`, `@llamaindex/groq`, `@llamaindex/ollama`
+
+### Pure SDK Agent
+- `groq-sdk` (already in project for other services)
+
+### Shared (all three)
+- `chromadb`, `@xenova/transformers`, `cohere-ai`, `zod`, `express`, `pdf-parse`
+
+---
+
+## Notes
+
+- The Pure SDK agent has **zero framework dependencies** — only `groq-sdk` for LLM access
+- All three agents can be compared directly on the same queries
+- The Pure SDK agent demonstrates exactly what happens inside LangChain/LlamaIndex agent loops
+- No existing functionality was removed or modified during any of the three implementations
+- GitHub: https://github.com/HetSoni916/Groovy

@@ -10,6 +10,8 @@
     "agent:test": "ts-node src/cli/agent-cli.ts --test",
     "llama": "ts-node src/cli/llama-cli.ts",
     "llama:test": "ts-node src/cli/llama-cli.ts --test",
+    "sdk": "ts-node src/sdk/cli/sdk-cli.ts",
+    "sdk:test": "ts-node src/sdk/cli/sdk-cli.ts --test",
     "benchmark": "ts-node src/benchmark/runner.ts",
     "reranker": "ts-node src/benchmark/reranker-test.ts",
     "chroma": "ts-node --transpileOnly -e \"process.env.TRANSFORMERS_CACHE = 'H:\\\\Groovy\\\\10th day\\\\backend\\\\storage\\\\chroma\\\\cache'; const oldWarn = console.warn; console.warn = function(){}; const { ChromaClient } = require('chromadb'); (async function() { const c = new ChromaClient({ host: 'localhost', port: 8000 }); const col = await c.getCollection({ name: 'ask-my-notes' }); const count = await col.count(); const data = await col.peek({ limit: count }); console.warn = oldWarn; console.log('ChromaDB Collection: ask-my-notes (' + count + ' vectors)\\n'); var line = '+------+------+----------------------------------------+----------+'; console.log(line); console.log('| ID   | Page | Text                                    | Doc      |'); console.log(line); for (let i = 0; i < data.ids.length; i++) { const m = data.metadatas[i]; const doc = data.documents[i].replace(/\\n/g, ' ').substring(0, 36); const id = data.ids[i].substring(0, 4); console.log('| ' + id + ' | ' + m.pageStart + '    | ' + doc.padEnd(36).substring(0,36) + ' | ' + m.filename.substring(0,8).padEnd(8) + ' |'); } console.log(line); })()\""

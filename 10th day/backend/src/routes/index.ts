@@ -6,6 +6,7 @@ import { uploadPdf, listPdfs, deletePdf } from '../controllers/pdfController';
 import { askQuestion, getChatHistory, clearChatHistory } from '../controllers/chatController';
 import { askAgent } from '../controllers/agentController';
 import { askLlamaAgent } from '../controllers/llamaController';
+import { askSDKAgent } from '../sdk/controllers/sdkController';
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router.delete('/chat/history', clearChatHistory);
 
 router.post('/agent/ask', askAgent);
 router.post('/llama/ask', askLlamaAgent);
+router.post('/sdk/ask', askSDKAgent);
 
 router.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
