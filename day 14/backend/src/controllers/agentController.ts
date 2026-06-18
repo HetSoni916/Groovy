@@ -4,13 +4,18 @@ import { runAgentExecutorStream } from '../agent/executor';
 import { agentLogger } from '../agent/logger';
 
 export async function askAgent(req: Request, res: Response) {
-  const { question, stream } = req.body;
+  const { question, stream, sessionId, userId } = req.body;
 
   if (!question || typeof question !== 'string' || !question.trim()) {
     return res.status(400).json({ error: 'question is required (non-empty string)' });
   }
 
   agentLogger.logUserQuery(question);
+
+  const options = {
+    sessionId: sessionId || req.headers['x-session-id'] as string || 'default-session',
+    userId: userId || req.headers['x-user-id'] as string || 'default-user',
+  };
 
   if (stream) {
     res.setHeader('Content-Type', 'text/event-stream');
@@ -25,7 +30,9 @@ export async function askAgent(req: Request, res: Response) {
             res.write(`data: ${JSON.stringify({ type: 'token', text: typeof event.content === 'string' ? event.content : JSON.stringify(event.content) })}\n\n`);
           }
         },
-        tools
+        tools,
+        undefined,
+        options
       );
 
       res.write(`data: ${JSON.stringify({ type: 'done', output: answer })}\n\n`);
@@ -36,7 +43,7 @@ export async function askAgent(req: Request, res: Response) {
     }
   } else {
     try {
-      const answer = await runAgent(question.trim());
+      const answer = await runAgent(question.trim(), undefined, options);
       res.json({ question: question.trim(), answer });
     } catch (err: any) {
       res.status(500).json({ error: err.message || 'Agent call failed' });

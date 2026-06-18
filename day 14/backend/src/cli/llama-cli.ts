@@ -102,13 +102,16 @@ async function runInteractive() {
   }
   console.log();
   const history: { role: string; content: string }[] = [];
+  const sessionId = `cli-session-llama-${Date.now()}`;
+  const userId = 'cli-user';
+  console.log(`Using Session: ${sessionId}, User: ${userId}\n`);
   const ask = () => {
     rl.question('You: ', async (input) => {
       if (input.toLowerCase() === 'exit') { rl.close(); return; }
       if (input.toLowerCase() === 'test') { await runTests(); ask(); return; }
       if (input.toLowerCase() === 'reset') { resetAgent(); console.log('Agent reset.\n'); ask(); return; }
       try {
-        const answer = await runAgent(input, false, history);
+        const answer = await runAgent(input, false, undefined, { sessionId, userId });
         console.log(`\nAgent: ${answer}\n`);
         history.push({ role: 'user', content: input });
         history.push({ role: 'assistant', content: answer });

@@ -85,12 +85,15 @@ async function runInteractive() {
   console.log('LangChain 4-Tool Agent: Calculator + Web Search + Slack + Ask My Notes');
   console.log('(type "exit" to quit, "test" for tests)\n');
   const history: any[] = [];
+  const sessionId = `cli-session-langchain-${Date.now()}`;
+  const userId = 'cli-user';
+  console.log(`Using Session: ${sessionId}, User: ${userId}\n`);
   const ask = () => {
     rl.question('You: ', async (input) => {
       if (input.toLowerCase() === 'exit') { rl.close(); return; }
       if (input.toLowerCase() === 'test') { await runTests(); ask(); return; }
       try {
-        const answer = await runAgent(input, history);
+        const answer = await runAgent(input, undefined, { sessionId, userId });
         console.log(`Agent: ${answer}\n`);
         history.push({ role: 'user', content: input });
         history.push({ role: 'assistant', content: answer });

@@ -11,7 +11,7 @@ const UserModel = {
 
   findById: async (id) => {
     const { rows } = await db.query(
-      'SELECT id, name, email, role, is_active, created_at FROM users WHERE id = $1',
+      'SELECT id, first_name, last_name, email, role, is_active, created_at FROM users WHERE id = $1',
       [id]
     );
     return rows[0] || null;

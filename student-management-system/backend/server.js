@@ -7,6 +7,7 @@ const helmet = require('helmet');
 
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
 const { errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: false }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));

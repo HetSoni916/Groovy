@@ -75,19 +75,45 @@ function getAgent(): ReActAgent {
   return agentInstance;
 }
 
+import { memoryManager } from '../memory/memoryManager';
+
 export async function runAgent(
   input: string,
   stream = false,
-  chatHistory?: { role: string; content: string }[]
+  chatHistory?: { role: string; content: string }[],
+  options: { sessionId?: string; userId?: string } = {}
 ): Promise<string> {
+  const sessionId = options.sessionId || 'default-session';
+  const userId = options.userId || 'default-user';
+
   llamaLogger.logUserQuery(input);
 
-  const agent = getAgent();
+  // Retrieve relevant memories and construct system prompt
+  const updatedSystemPrompt = await memoryManager.getSystemPromptWithMemory(userId, input, SYSTEM_PROMPT);
 
-  const history = chatHistory?.map(m => ({
+  // Create unique agent per session to ensure unique system prompts, or reset instance
+  const llm = createLLM();
+  const agent = new ReActAgent({
+    tools,
+    llm,
+    systemPrompt: updatedSystemPrompt,
+    verbose: llamaConfig.agentVerbose,
+  });
+
+  // Get session short term history if not passed directly
+  const loadedHistory = (chatHistory && chatHistory.length > 0)
+    ? chatHistory
+    : memoryManager.getShortTermHistory(sessionId);
+
+  const history = loadedHistory.map(m => ({
     role: m.role as 'user' | 'assistant',
     content: m.content,
   }));
+
+  // Save the user's input message to short term memory
+  memoryManager.saveShortTermMessage(sessionId, 'user', input);
+
+  let answer = '';
 
   if (stream) {
     const response = await agent.chat({
@@ -100,19 +126,28 @@ export async function runAgent(
       const text = (chunk as any)?.response || (chunk as any)?.delta || '';
       if (text) chunks.push(text);
     }
-    return chunks.join('');
+    answer = chunks.join('');
+  } else {
+    const response = await agent.chat({
+      message: input,
+      chatHistory: history,
+    });
+
+    answer = typeof (response as any)?.response === 'string'
+      ? (response as any).response
+      : String(response);
   }
 
-  const response = await agent.chat({
-    message: input,
-    chatHistory: history,
-  });
-
-  const answer = typeof (response as any)?.response === 'string'
-    ? (response as any).response
-    : String(response);
+  // Save assistant's answer to short term memory
+  memoryManager.saveShortTermMessage(sessionId, 'assistant', answer);
 
   llamaLogger.logFinalAnswer(answer);
+
+  // Trigger fact extraction in background
+  memoryManager.autoExtractAndSaveFact(userId, input, answer).catch(err => {
+    console.error('[Memory] Background memory extraction failed (LlamaIndex):', err);
+  });
+
   return answer;
 }
 

@@ -13,9 +13,9 @@ export const tools: DynamicStructuredTool[] = [
   askMyNotesTool,
 ];
 
-export async function runAgent(userInput: string, history: any[] = []): Promise<string> {
+export async function runAgent(userInput: string, history: any[] = [], options: { sessionId?: string; userId?: string } = {}): Promise<string> {
   try {
-    const result = await runAgentExecutor(userInput, tools, history);
+    const result = await runAgentExecutor(userInput, tools, history, options);
     return result;
   } catch (err: any) {
     agentLogger.logToolError('runAgent', err);

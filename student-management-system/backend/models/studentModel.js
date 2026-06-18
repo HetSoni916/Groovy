@@ -1,7 +1,6 @@
 const db = require('../config/db');
 
 const StudentModel = {
-  // Generate next student ID like STU-20240006
   generateStudentId: async () => {
     const year = new Date().getFullYear();
     const { rows } = await db.query(
@@ -19,7 +18,7 @@ const StudentModel = {
     const col = allowed.includes(sortBy) ? sortBy : 'created_at';
     const dir = sortOrder === 'asc' ? 'ASC' : 'DESC';
 
-    const conditions = ['deleted_at IS NULL'];
+    const conditions = ['is_deleted = FALSE'];
     const params = [];
 
     if (search) {
@@ -53,7 +52,7 @@ const StudentModel = {
 
   findById: async (id) => {
     const { rows } = await db.query(
-      'SELECT * FROM students WHERE id = $1 AND deleted_at IS NULL',
+      'SELECT * FROM students WHERE id = $1 AND is_deleted = FALSE',
       [id]
     );
     return rows[0] || null;
@@ -83,8 +82,8 @@ const StudentModel = {
       `UPDATE students SET
         first_name=$1, last_name=$2, email=$3, phone=$4,
         date_of_birth=$5, gender=$6, address=$7, course=$8,
-        enrollment_date=$9, status=$10
-       WHERE id=$11 AND deleted_at IS NULL
+        enrollment_date=$9, status=$10, updated_at=NOW()
+       WHERE id=$11 AND is_deleted = FALSE
        RETURNING *`,
       [first_name, last_name, email, phone, date_of_birth, gender, address, course, enrollment_date, status, id]
     );
@@ -93,7 +92,7 @@ const StudentModel = {
 
   softDelete: async (id) => {
     const { rows } = await db.query(
-      'UPDATE students SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id',
+      'UPDATE students SET is_deleted = TRUE, deleted_at = NOW() WHERE id = $1 AND is_deleted = FALSE RETURNING id',
       [id]
     );
     return rows[0] || null;
@@ -102,9 +101,9 @@ const StudentModel = {
   getStats: async () => {
     const { rows } = await db.query(`
       SELECT
-        COUNT(*) FILTER (WHERE deleted_at IS NULL)                                   AS total,
-        COUNT(*) FILTER (WHERE deleted_at IS NULL AND status = 'Active')             AS active,
-        COUNT(*) FILTER (WHERE deleted_at IS NULL AND DATE_TRUNC('month', enrollment_date) = DATE_TRUNC('month', NOW())) AS new_this_month
+        COUNT(*) FILTER (WHERE is_deleted = FALSE) AS total,
+        COUNT(*) FILTER (WHERE is_deleted = FALSE AND status = 'Active') AS active,
+        COUNT(*) FILTER (WHERE is_deleted = FALSE AND DATE_TRUNC('month', enrollment_date) = DATE_TRUNC('month', NOW())) AS new_this_month
       FROM students
     `);
     return rows[0];

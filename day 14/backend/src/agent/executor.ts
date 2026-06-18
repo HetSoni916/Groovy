@@ -32,20 +32,37 @@ function extractAnswer(result: any): string {
   return 'No response generated';
 }
 
+import { memoryManager } from '../memory/memoryManager';
+import { SYSTEM_PROMPT } from './systemPrompt';
+
 export async function runAgentExecutor(
   input: string,
   tools: DynamicStructuredTool[] = defaultTools,
-  history: any[] = []
+  history: any[] = [],
+  options: { sessionId?: string; userId?: string } = {}
 ): Promise<string> {
+  const sessionId = options.sessionId || 'default-session';
+  const userId = options.userId || 'default-user';
+
   agentLogger.logUserQuery(input);
 
-  const { agent, threadId } = createLangChainAgent(tools);
+  // Retrieve relevant memories and construct system prompt
+  const updatedSystemPrompt = await memoryManager.getSystemPromptWithMemory(userId, input, SYSTEM_PROMPT);
 
-  const historyMessages = convertHistory(history);
+  const { agent, threadId } = createLangChainAgent(tools, undefined, updatedSystemPrompt);
+
+  const loadedHistory = (history && history.length > 0)
+    ? history
+    : memoryManager.getShortTermHistory(sessionId);
+
+  const historyMessages = convertHistory(loadedHistory);
   const messages = [
     ...historyMessages,
     new HumanMessage(input),
   ];
+
+  // Save the user's input message to short term memory
+  memoryManager.saveShortTermMessage(sessionId, 'user', input);
 
   try {
     const result = await agent.invoke(
@@ -55,6 +72,15 @@ export async function runAgentExecutor(
 
     const answer = extractAnswer(result);
     agentLogger.logFinalAnswer(answer);
+
+    // Save assistant response to short term memory
+    memoryManager.saveShortTermMessage(sessionId, 'assistant', answer);
+
+    // Trigger fact extraction in background
+    memoryManager.autoExtractAndSaveFact(userId, input, answer).catch(err => {
+      console.error('[Memory] Background memory extraction failed (LangChain):', err);
+    });
+
     return answer;
   } catch (err: any) {
     agentLogger.logToolError('executor', err);
@@ -66,17 +92,29 @@ export async function runAgentExecutorStream(
   input: string,
   onEvent: (event: any) => void,
   tools: DynamicStructuredTool[] = defaultTools,
-  history: any[] = []
+  history: any[] = [],
+  options: { sessionId?: string; userId?: string } = {}
 ): Promise<string> {
+  const sessionId = options.sessionId || 'default-session';
+  const userId = options.userId || 'default-user';
+
   agentLogger.logUserQuery(input);
 
-  const { agent, threadId } = createLangChainAgent(tools);
+  const updatedSystemPrompt = await memoryManager.getSystemPromptWithMemory(userId, input, SYSTEM_PROMPT);
+  const { agent, threadId } = createLangChainAgent(tools, undefined, updatedSystemPrompt);
 
-  const historyMessages = convertHistory(history);
+  const loadedHistory = (history && history.length > 0)
+    ? history
+    : memoryManager.getShortTermHistory(sessionId);
+
+  const historyMessages = convertHistory(loadedHistory);
   const messages = [
     ...historyMessages,
     new HumanMessage(input),
   ];
+
+  // Save the user's input message to short term memory
+  memoryManager.saveShortTermMessage(sessionId, 'user', input);
 
   try {
     const stream = await agent.stream(
@@ -95,6 +133,15 @@ export async function runAgentExecutorStream(
 
     const answer = extractAnswer(finalResult);
     agentLogger.logFinalAnswer(answer);
+
+    // Save assistant response to short term memory
+    memoryManager.saveShortTermMessage(sessionId, 'assistant', answer);
+
+    // Trigger fact extraction in background
+    memoryManager.autoExtractAndSaveFact(userId, input, answer).catch(err => {
+      console.error('[Memory] Background memory extraction failed (LangChain Stream):', err);
+    });
+
     return answer;
   } catch (err: any) {
     agentLogger.logToolError('executor_stream', err);

@@ -5,6 +5,7 @@ import { toolSchemas } from './schemas';
 import { llmCall } from './llm';
 import { executeTool } from './executor';
 import { AgentMessage, AgentRunResult, AgentIteration, TokenUsage } from './types';
+import { memoryManager } from '../memory/memoryManager';
 
 const SYSTEM_PROMPT = `You are a helpful AI assistant with access to the following tools:
 
@@ -33,19 +34,33 @@ function extractToolCalls(msg: AgentMessage): Array<{ id: string; name: string; 
   return null;
 }
 
+
 export async function runAgent(
   input: string,
-  chatHistory?: { role: string; content: string }[]
+  chatHistory?: { role: string; content: string }[],
+  options: { sessionId?: string; userId?: string } = {}
 ): Promise<AgentRunResult> {
   const startTime = Date.now();
-  const conversation = new ConversationManager(SYSTEM_PROMPT);
+  const sessionId = options.sessionId || 'default-session';
+  const userId = options.userId || 'default-user';
+
+  // Step 1: Retrieve relevant memories and construct the system prompt
+  const updatedSystemPrompt = await memoryManager.getSystemPromptWithMemory(userId, input, SYSTEM_PROMPT);
+
+  const conversation = new ConversationManager(updatedSystemPrompt);
   const iterations: AgentIteration[] = [];
   const totalUsage: TokenUsage = { input: 0, output: 0, total: 0 };
 
   sdkLogger.userQuery(input);
 
-  if (chatHistory && chatHistory.length > 0) {
-    for (const msg of chatHistory) {
+  // Step 2: Load short-term memory (session-based) history
+  // Prioritize history passed explicitly, else query from short-term memory manager
+  const loadedHistory = (chatHistory && chatHistory.length > 0)
+    ? chatHistory
+    : memoryManager.getShortTermHistory(sessionId);
+
+  if (loadedHistory && loadedHistory.length > 0) {
+    for (const msg of loadedHistory) {
       if (msg.role === 'user') {
         conversation.addUserMessage(msg.content);
       } else if (msg.role === 'assistant') {
@@ -55,6 +70,9 @@ export async function runAgent(
   }
 
   conversation.addUserMessage(input);
+
+  // Save the user's input message to short term memory
+  memoryManager.saveShortTermMessage(sessionId, 'user', input);
 
   let finalAnswer = '';
   let iterationCount = 0;
@@ -78,6 +96,7 @@ export async function runAgent(
 
     if (llmResponse.tool_calls && llmResponse.tool_calls.length > 0) {
       conversation.addAssistantMessage(llmResponse.content, llmResponse.tool_calls);
+      memoryManager.saveShortTermMessage(sessionId, 'assistant', llmResponse.content || '', { tool_calls: llmResponse.tool_calls });
 
       for (const toolCall of llmResponse.tool_calls) {
         const iter: AgentIteration = {
@@ -90,6 +109,7 @@ export async function runAgent(
         iter.toolResult = result;
 
         conversation.addToolResult(toolCall.id, toolCall.function.name, result);
+        memoryManager.saveShortTermMessage(sessionId, 'tool', result, { name: toolCall.function.name, tool_call_id: toolCall.id });
       }
 
       sdkLogger.iterationDetail(iterations[iterations.length - 1]);
@@ -104,6 +124,7 @@ export async function runAgent(
       });
 
       conversation.addAssistantMessage(finalAnswer);
+      memoryManager.saveShortTermMessage(sessionId, 'assistant', finalAnswer);
       sdkLogger.iterationDetail(iterations[iterations.length - 1]);
       break;
     }
@@ -122,6 +143,11 @@ export async function runAgent(
 
   const totalLatencyMs = Date.now() - startTime;
   sdkLogger.latency(totalLatencyMs);
+
+  // Step 3: Trigger auto-extract in background to process user preference and update memories
+  memoryManager.autoExtractAndSaveFact(userId, input, finalAnswer).catch(err => {
+    console.error('[Memory] Background memory extraction failed:', err);
+  });
 
   return {
     answer: finalAnswer,

@@ -91,12 +91,15 @@ async function runInteractive() {
   console.log('Framework: groq-sdk (no LangChain/LlamaIndex)');
   console.log('(type "exit" to quit, "test" for tests)\n');
   const history: { role: string; content: string }[] = [];
+  const sessionId = `cli-session-${Date.now()}`;
+  const userId = 'cli-user';
+  console.log(`Using Session: ${sessionId}, User: ${userId}\n`);
   const ask = () => {
     rl.question('You: ', async (input) => {
       if (input.toLowerCase() === 'exit') { rl.close(); return; }
       if (input.toLowerCase() === 'test') { await runTests(); ask(); return; }
       try {
-        const result = await runAgent(input, history);
+        const result = await runAgent(input, undefined, { sessionId, userId });
         console.log(`\nAgent: ${result.answer}\n`);
         console.log(`[${result.iterations.length} iterations, ${result.totalLatencyMs}ms, ${result.tokenUsage.total} tokens]\n`);
         history.push({ role: 'user', content: input });

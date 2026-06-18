@@ -25,13 +25,13 @@ function createLLM() {
   });
 }
 
-export function createLangChainAgent(tools: DynamicStructuredTool[], threadId?: string) {
+export function createLangChainAgent(tools: DynamicStructuredTool[], threadId?: string, customSystemPrompt?: string) {
   const llm = createLLM();
 
   const agent = createAgent({
     model: llm,
     tools,
-    systemPrompt: SYSTEM_PROMPT,
+    systemPrompt: customSystemPrompt || SYSTEM_PROMPT,
     checkpointer: new MemorySaver(),
     name: 'AskMyNotesAgent',
   });
