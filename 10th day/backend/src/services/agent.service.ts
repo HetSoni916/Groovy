@@ -1,9 +1,8 @@
-import * as dotenv from 'dotenv';
-import * as path from 'path';
 import Groq from 'groq-sdk';
-import * as readline from 'readline';
+import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || '' });
 
@@ -114,23 +113,7 @@ async function executeTool(name: string, args: ToolArgs): Promise<string> {
   }
 }
 
-function parseFailedGeneration(text: string): { name: string; args: ToolArgs } | null {
-  const m = text.match(/<function=(\w+)[\s{]*({.*?})[\s}]*<\/function>/);
-  if (m) {
-    try {
-      return { name: m[1], args: JSON.parse(m[2]) };
-    } catch { }
-  }
-  const m2 = text.match(/<function=(\w+)[\s(]*({.*?})[\s)]*>/);
-  if (m2) {
-    try {
-      return { name: m2[1], args: JSON.parse(m2[2]) };
-    } catch { }
-  }
-  return null;
-}
-
-async function runAgent(userInput: string, history: any[] = []): Promise<string> {
+export async function runAgent(userInput: string, history: any[] = []): Promise<string> {
   const messages: any[] = [
     {
       role: 'system',
@@ -183,81 +166,3 @@ async function runAgent(userInput: string, history: any[] = []): Promise<string>
     }
   }
 }
-
-async function runTests() {
-  console.log('=== Running Tests ===\n');
-  const tests = [
-    { input: 'What is 15 + 27?', check: (r: string) => r.includes('42') },
-    { input: 'Calculate 100 / 4', check: (r: string) => r.includes('25') },
-    { input: 'What is 7 to the power of 3?', check: (r: string) => r.includes('343') },
-    { input: 'Square root of 144', check: (r: string) => r.includes('12') },
-    { input: 'What is 17 modulo 5?', check: (r: string) => r.includes('2') },
-  ];
-
-  let passed = 0;
-  for (const t of tests) {
-    process.stdout.write(`"${t.input}"... `);
-    try {
-      const result = await runAgent(t.input);
-      const ok = t.check(result);
-      console.log(ok ? 'PASS' : 'FAIL');
-      if (!ok) console.log(`  Got: ${result.substring(0, 100)}`);
-      else passed++;
-    } catch (e) {
-      console.log('ERROR: ' + (e as Error).message);
-    }
-  }
-  console.log(`\n${passed}/${tests.length} calculator tests passed`);
-
-  console.log('\n--- Web Search Test ---');
-  for (const q of ['Who is the current CEO of Tesla?', 'Latest Python version 2026']) {
-    process.stdout.write(`"${q}"... `);
-    try {
-      const r = await runAgent(q);
-      console.log('OK');
-      console.log(`  ${r.substring(0, 200)}...\n`);
-    } catch (e) {
-      console.log('ERROR: ' + (e as Error).message);
-    }
-  }
-
-  console.log('--- Slack Webhook Test ---');
-  if (process.env.SLACK_WEBHOOK_URL) {
-    process.stdout.write('Sending test message... ');
-    try {
-      const r = await runAgent('Send a slack message saying "Hello from the 3-tool agent!"');
-      const ok = r.includes('success') || r.includes('Slack');
-      console.log(ok ? 'OK' : 'FAIL');
-      console.log(`  ${r.substring(0, 200)}...\n`);
-    } catch (e) {
-      console.log('ERROR: ' + (e as Error).message);
-    }
-  } else {
-    console.log('  SKIPPED (set SLACK_WEBHOOK_URL in .env to test)\n');
-  }
-}
-
-async function runInteractive() {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  console.log('3-Tool Agent: Calculator + Web Search + Slack (type "exit" to quit, "test" for tests)\n');
-  const history: any[] = [];
-  const ask = () => {
-    rl.question('You: ', async (input) => {
-      if (input.toLowerCase() === 'exit') { rl.close(); return; }
-      if (input.toLowerCase() === 'test') { await runTests(); ask(); return; }
-      try {
-        const answer = await runAgent(input, history);
-        console.log(`Agent: ${answer}\n`);
-        history.push({ role: 'user', content: input });
-        history.push({ role: 'assistant', content: answer });
-      } catch (e) {
-        console.log('Error:', (e as Error).message);
-      }
-      ask();
-    });
-  };
-  ask();
-}
-
-const isTest = process.argv.includes('--test');
-if (isTest) { runTests().catch(console.error); } else { runInteractive().catch(console.error); }
