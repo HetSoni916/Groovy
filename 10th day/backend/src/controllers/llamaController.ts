@@ -1,16 +1,15 @@
 import { Request, Response } from 'express';
-import { runAgent, tools } from '../services/agent.service';
-import { runAgentExecutorStream } from '../agent/executor';
-import { agentLogger } from '../agent/logger';
+import { runAgent } from '../llama/agent';
+import { llamaLogger } from '../llama/logger';
 
-export async function askAgent(req: Request, res: Response) {
+export async function askLlamaAgent(req: Request, res: Response) {
   const { question, stream } = req.body;
 
   if (!question || typeof question !== 'string' || !question.trim()) {
     return res.status(400).json({ error: 'question is required (non-empty string)' });
   }
 
-  agentLogger.logUserQuery(question);
+  llamaLogger.logUserQuery(question);
 
   if (stream) {
     res.setHeader('Content-Type', 'text/event-stream');
@@ -18,16 +17,7 @@ export async function askAgent(req: Request, res: Response) {
     res.setHeader('Connection', 'keep-alive');
 
     try {
-      const answer = await runAgentExecutorStream(
-        question.trim(),
-        (event: any) => {
-          if (event.type === 'token' && event.content) {
-            res.write(`data: ${JSON.stringify({ type: 'token', text: typeof event.content === 'string' ? event.content : JSON.stringify(event.content) })}\n\n`);
-          }
-        },
-        tools
-      );
-
+      const answer = await runAgent(question.trim(), true);
       res.write(`data: ${JSON.stringify({ type: 'done', output: answer })}\n\n`);
       res.end();
     } catch (err: any) {

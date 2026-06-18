@@ -1,9 +1,20 @@
 import * as readline from 'readline';
-import { runAgent, tools } from '../services/agent.service';
-import { generateThreadId } from '../agent/memory';
+import { runAgent, resetAgent } from '../llama/agent';
+import { llamaLogger } from '../llama/logger';
+import { calculatorTool } from '../llama/tools/calculator';
+import { webSearchTool } from '../llama/tools/webSearch';
+import { slackTool } from '../llama/tools/slack';
+import { askMyNotesTool } from '../llama/tools/askMyNotes';
+
+const toolList = [
+  { name: calculatorTool.metadata.name, desc: calculatorTool.metadata.description },
+  { name: webSearchTool.metadata.name, desc: webSearchTool.metadata.description },
+  { name: slackTool.metadata.name, desc: slackTool.metadata.description },
+  { name: askMyNotesTool.metadata.name, desc: askMyNotesTool.metadata.description },
+];
 
 async function runTests() {
-  console.log('=== Running Tests ===\n');
+  console.log('=== Running LlamaIndex Agent Tests ===\n');
   const tests = [
     { input: 'What is 15 + 27?', check: (r: string) => r.includes('42') },
     { input: 'Calculate 100 / 4', check: (r: string) => r.includes('25') },
@@ -43,7 +54,7 @@ async function runTests() {
   if (process.env.SLACK_WEBHOOK_URL) {
     process.stdout.write('Sending test message... ');
     try {
-      const r = await runAgent('Send a slack message saying "Hello from the 3-tool agent!"');
+      const r = await runAgent('Send a slack message saying "Hello from the LlamaIndex agent!"');
       const ok = r.includes('success') || r.includes('Slack');
       console.log(ok ? 'OK' : 'FAIL');
       console.log(`  ${r.substring(0, 200)}...\n`);
@@ -77,21 +88,28 @@ async function runTests() {
     console.log('ERROR: ' + (e as Error).message);
   }
 
-  console.log('All tests completed.');
+  console.log('\n=== All tests completed ===');
+  console.log(`Session ID: ${llamaLogger.getSessionId()}`);
 }
 
 async function runInteractive() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  console.log('LangChain 4-Tool Agent: Calculator + Web Search + Slack + Ask My Notes');
-  console.log('(type "exit" to quit, "test" for tests)\n');
-  const history: any[] = [];
+  console.log('LlamaIndex 4-Tool Agent: Calculator + Web Search + Slack + Ask My Notes');
+  console.log('(type "exit" to quit, "test" for tests, "reset" to reset agent)\n');
+  console.log('Available tools:');
+  for (const t of toolList) {
+    console.log(`  - ${t.name}: ${t.desc}`);
+  }
+  console.log();
+  const history: { role: string; content: string }[] = [];
   const ask = () => {
     rl.question('You: ', async (input) => {
       if (input.toLowerCase() === 'exit') { rl.close(); return; }
       if (input.toLowerCase() === 'test') { await runTests(); ask(); return; }
+      if (input.toLowerCase() === 'reset') { resetAgent(); console.log('Agent reset.\n'); ask(); return; }
       try {
-        const answer = await runAgent(input, history);
-        console.log(`Agent: ${answer}\n`);
+        const answer = await runAgent(input, false, history);
+        console.log(`\nAgent: ${answer}\n`);
         history.push({ role: 'user', content: input });
         history.push({ role: 'assistant', content: answer });
       } catch (e) {

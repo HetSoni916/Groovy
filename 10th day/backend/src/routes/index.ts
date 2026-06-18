@@ -5,6 +5,7 @@ import { QueryRequestSchema, DeletePdfParamsSchema } from '../schemas';
 import { uploadPdf, listPdfs, deletePdf } from '../controllers/pdfController';
 import { askQuestion, getChatHistory, clearChatHistory } from '../controllers/chatController';
 import { askAgent } from '../controllers/agentController';
+import { askLlamaAgent } from '../controllers/llamaController';
 
 const router = Router();
 
@@ -17,6 +18,7 @@ router.get('/chat/history', getChatHistory);
 router.delete('/chat/history', clearChatHistory);
 
 router.post('/agent/ask', askAgent);
+router.post('/llama/ask', askLlamaAgent);
 
 router.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
