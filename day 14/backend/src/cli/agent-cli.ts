@@ -1,5 +1,6 @@
 import * as readline from 'readline';
-import { runAgent } from '../services/agent.service';
+import { runAgent, tools } from '../services/agent.service';
+import { generateThreadId } from '../agent/memory';
 
 async function runTests() {
   console.log('=== Running Tests ===\n');
@@ -52,11 +53,37 @@ async function runTests() {
   } else {
     console.log('  SKIPPED (set SLACK_WEBHOOK_URL in .env to test)\n');
   }
+
+  console.log('\n--- Ask My Notes Test ---');
+  process.stdout.write('Testing RAG query... ');
+  try {
+    const r = await runAgent('What is the internship deadline in my notes?');
+    const hasAnswer = r.length > 20 && !r.includes('Error');
+    console.log(hasAnswer ? 'OK' : 'CHECK');
+    console.log(`  ${r.substring(0, 200)}...\n`);
+  } catch (e) {
+    console.log('ERROR: ' + (e as Error).message);
+  }
+
+  console.log('\n--- Multi-Step Test ---');
+  process.stdout.write('Testing multi-tool chain... ');
+  try {
+    const result = await runAgent(
+      'Calculate 984 * 75, then send the result to Slack'
+    );
+    console.log('OK');
+    console.log(`  ${result.substring(0, 300)}...\n`);
+  } catch (e) {
+    console.log('ERROR: ' + (e as Error).message);
+  }
+
+  console.log('All tests completed.');
 }
 
 async function runInteractive() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  console.log('3-Tool Agent: Calculator + Web Search + Slack (type "exit" to quit, "test" for tests)\n');
+  console.log('LangChain 4-Tool Agent: Calculator + Web Search + Slack + Ask My Notes');
+  console.log('(type "exit" to quit, "test" for tests)\n');
   const history: any[] = [];
   const ask = () => {
     rl.question('You: ', async (input) => {
@@ -77,4 +104,8 @@ async function runInteractive() {
 }
 
 const isTest = process.argv.includes('--test');
-if (isTest) { runTests().catch(console.error); } else { runInteractive().catch(console.error); }
+if (isTest) {
+  runTests().catch(console.error);
+} else {
+  runInteractive().catch(console.error);
+}
