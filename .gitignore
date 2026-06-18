@@ -9,6 +9,7 @@
 
 # Node modules
 node_modules/
+calculator-node_modules/
 
 # OS files
 .DS_Store
