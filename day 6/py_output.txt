@@ -1,0 +1,33 @@
+﻿{
+  "id": "chatcmpl-f2e7f3cf-6632-4707-bfc4-d34a95aef9e7",
+  "object": "chat.completion",
+  "created": 1781582630,
+  "model": "llama-3.3-70b-versatile",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello. I'm an artificial intelligence model known as Llama. Llama stands for \"Large Language Model Meta AI.\""
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.054770039,
+    "prompt_tokens": 39,
+    "prompt_time": 0.003537501,
+    "completion_tokens": 25,
+    "completion_time": 0.047598301,
+    "total_tokens": 64,
+    "total_time": 0.051135802
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_dae98b5ecb",
+  "x_groq": {
+    "id": "req_01kv79k3gvejct039zkzm5pqy2",
+    "seed": 921525050
+  },
+  "service_tier": "on_demand"
+}

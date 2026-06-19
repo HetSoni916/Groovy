@@ -1,0 +1,18 @@
+[
+  {
+    "id": "56ba018d-8e03-4f68-8ee4-cb895e1aeb44",
+    "userId": "test-user-123",
+    "text": "User prefers dark mode themes.",
+    "timestamp": "2026-06-18T11:03:36.626Z",
+    "importance": 6,
+    "metadata": {}
+  },
+  {
+    "id": "f45ddfe0-cd1d-42b5-8a1d-35a25d51a593",
+    "userId": "test-user-123",
+    "text": "User Slack channel is engineering-team.",
+    "timestamp": "2026-06-18T11:03:37.085Z",
+    "importance": 8,
+    "metadata": {}
+  }
+]

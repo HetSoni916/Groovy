@@ -1,0 +1,12 @@
+{
+  "name": "groovy-workspace",
+  "version": "1.0.0",
+  "description": "Workspace root",
+  "scripts": {
+    "build:backend": "cd \"10th day/backend\" && npm run build",
+    "build:frontend": "cd \"10th day/frontend\" && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "dev": "cd \"10th day/backend\" && npm run dev",
+    "dev:frontend": "cd \"10th day/frontend\" && npm run dev"
+  }
+}

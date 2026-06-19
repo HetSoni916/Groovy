@@ -338,5 +338,25 @@
       "model": "llama-3.3-70b-versatile"
     },
     "timestamp": "2026-06-18T05:32:21.438Z"
+  },
+  {
+    "id": "fba0b162-f0b8-4464-a92b-283d83a00f0e",
+    "question": "give me the information",
+    "answer": "### Introduction to Microprocessors\nThe first microprocessor, the Intel 4004, was introduced in 1971, marking the beginning of a digital revolution (chunk: ae7cc3b7, Page 1). This 4-bit processor opened doors to new possibilities in computing and initiated the era of personal computers. \n\n### Evolution of Microprocessors\nThe evolution of microprocessors is outlined in the following stages:\n* The 8-bit processors took center stage in the mid-1970s, offering enhanced performance and capabilities (chunk: ae7cc3b7, Page 1).\n* The 16-bit microprocessor introduced a new level of power and efficiency in the late 1970s (chunk: ae7cc3b7, Page 1).\n* The 32-bit microprocessors revolutionized computing in the 1980s with increased speed and memory access (chunk: 717b4c2a, Page 1).\n* The 64-bit microprocessors marked another significant advance in technology in the early 2000s (chunk: 717b4c2a, Page 1).\n* The multi-core movement enhanced parallel processing capabilities in the mid-2000s (chunk: 717b4c2a, Page 1).\n\n### Impact of Microprocessors\nMicroprocessors have empowered innovators and creators, enabling the development of groundbreaking technologies (chunk: e3520817, Page 1). They provide the necessary computational power behind advancements in robotics, IoT, and automation. \n\n### Conclusion\nThe history of microprocessors showcases a remarkable journey of technological evolution and innovation (chunk: e3520817, Page 1). The future of microprocessors is a canvas of infinite possibilities waiting to be painted (chunk: e3520817, Page 1). \n(chunk: e3520817, Page 1)",
+    "sources": [
+      {
+        "filename": "mco presentation file.pdf",
+        "pageNumber": 1
+      }
+    ],
+    "usage": {
+      "inputTokens": 1413,
+      "outputTokens": 288,
+      "totalTokens": 1701,
+      "cost": 0.00106,
+      "latencyMs": 2657,
+      "model": "llama-3.3-70b-versatile"
+    },
+    "timestamp": "2026-06-18T11:59:13.515Z"
   }
 ]
