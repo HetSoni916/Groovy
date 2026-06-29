@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+venv/
+.venv/
+env/
+
+# Node
+node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+*.sqlite3
+
+# Test files
+test_*.py
+backend/test_gen.mp4
+
+# Storage (large files)
+storage/temp/
+storage/output/
+storage/renders/
+storage/music/*.wav
+!storage/stock_footage/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
